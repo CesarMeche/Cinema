@@ -1,9 +1,14 @@
 package co.edu.uptc.server.model;
 
+import java.util.ArrayList;
+
 import co.edu.uptc.server.interfaces.IServer.IModel;
+import co.edu.uptc.server.model.pojos.Auditorium;
+import co.edu.uptc.server.model.pojos.Movie;
 
 public class CinemaManager implements IModel{
-
+    private ArrayList<Movie> movies;
+    //user operations
     @Override
     public void getMovieSchedule() {
         // TODO Auto-generated method stub
@@ -33,11 +38,10 @@ public class CinemaManager implements IModel{
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'validateBook'");
     }
-
+//admin operations
     @Override
     public void addMovie() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'addMovie'");
+        
     }
 
     @Override
