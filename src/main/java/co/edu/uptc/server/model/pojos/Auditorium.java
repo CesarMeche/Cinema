@@ -8,8 +8,12 @@ import lombok.Setter;
 @Setter
 public class Auditorium {
     private Seat[][] seat;
-
-    public Auditorium(int row,int seatNumber) {
+    private String name;
+    public Auditorium(String name,int row,int seatNumber) {
+        this.name=name;
+        createAuditoriumSeats(row, seatNumber);
+    }
+    public void createAuditoriumSeats(int row,int seatNumber){
         seat= new Seat[row][seatNumber];
         for (int i = 0; i < row; i++) {
             for (int j = 0; j < seatNumber; j++) {
@@ -17,5 +21,4 @@ public class Auditorium {
             }
         }
     }
-
 }
