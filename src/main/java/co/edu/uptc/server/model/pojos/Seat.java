@@ -6,6 +6,11 @@ import lombok.Setter;
 @Setter
 public class Seat {
     private String row;
-    private String seatNumber;
+    private int seatNumber;
     private boolean ocuped;
+    public Seat(String row, int seatNumber) {
+        this.row = row;
+        this.seatNumber = seatNumber;
+        ocuped=false;
+    }
 }
