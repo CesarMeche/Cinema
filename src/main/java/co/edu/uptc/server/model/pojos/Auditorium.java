@@ -13,7 +13,7 @@ public class Auditorium {
         seat= new Seat[row][seatNumber];
         for (int i = 0; i < row; i++) {
             for (int j = 0; j < seatNumber; j++) {
-                seat[i][j]=new Seat(String.valueOf(i+65), j);
+                seat[i][j]=new Seat(String.valueOf((char)(i+65)), j+1);
             }
         }
     }
