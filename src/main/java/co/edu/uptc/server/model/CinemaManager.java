@@ -5,9 +5,15 @@ import java.util.ArrayList;
 import co.edu.uptc.server.interfaces.IServer.IModel;
 import co.edu.uptc.server.model.pojos.Auditorium;
 import co.edu.uptc.server.model.pojos.Movie;
-
+import co.edu.uptc.server.network.JsonResponse;
+import lombok.Getter;
+@Getter
 public class CinemaManager implements IModel{
     private ArrayList<Movie> movies;
+    public CinemaManager() {
+        movies= new ArrayList<>();
+    }
+
     //user operations
     @Override
     public void getMovieSchedule() {
@@ -40,8 +46,8 @@ public class CinemaManager implements IModel{
     }
 //admin operations
     @Override
-    public void addMovie() {
-        
+    public void addMovie(Movie newMovie) {
+        movies.add(newMovie);
     }
 
     @Override

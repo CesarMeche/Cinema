@@ -1,5 +1,8 @@
 package co.edu.uptc.server.interfaces;
 
+import co.edu.uptc.server.model.pojos.Movie;
+
+
 public class IServer {
     public interface IModel {
         //client operations
@@ -9,7 +12,7 @@ public class IServer {
         public void checkBook();
         public void validateBook();
         //admin operations
-        public void addMovie();
+        public void addMovie(Movie newmovie);
         public void editMovieData();
         public void createScreening();
         public void deleteScreening();
