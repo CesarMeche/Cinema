@@ -13,8 +13,10 @@ import co.edu.uptc.server.model.pojos.Schedule;
 import co.edu.uptc.server.model.pojos.Screening;
 
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
+@Setter
 public class CinemaManager implements IModel {
     private Schedule actualSchedule;
     private ArrayList<Schedule> futureSchedule;
@@ -137,16 +139,14 @@ public class CinemaManager implements IModel {
             actualSchedule(movie.getTitle());
             actualSchedule.addScreening(movie.getTitle(), screening);
         } else {
-            futureSchedule.add(new Schedule(date, date));
+            futureSchedule.add(new Schedule(findWeek(date), findWeek(date).plusDays(6)));
         }
     }
 
     private LocalDateTime findWeek(LocalDateTime date) {
         int day =  date.getDayOfWeek().compareTo(DayOfWeek.MONDAY);
-        if (day > 0) {
-            
-        }
-        return null;
+        date=date.minusDays(day);
+        return LocalDateTime.of(date.getYear(), date.getMonth(),date.getDayOfMonth(), 0, 0, 0);
     }
 
     private void actualSchedule(String title) {
