@@ -1,17 +1,22 @@
 package co.edu.uptc.server.model;
 
+import java.sql.Date;
 import java.util.ArrayList;
 
 import co.edu.uptc.server.interfaces.IServer.IModel;
 import co.edu.uptc.server.model.enums.EditMovie;
 import co.edu.uptc.server.model.pojos.Auditorium;
 import co.edu.uptc.server.model.pojos.Movie;
-import co.edu.uptc.server.network.JsonResponse;
+import co.edu.uptc.server.model.pojos.Screening;
+
 import lombok.Getter;
 
 @Getter
 public class CinemaManager implements IModel {
     private ArrayList<Movie> movies;
+    private ArrayList<Screening> screenings;
+    private ArrayList<Auditorium> auditoriums;
+    
 
     public CinemaManager() {
         movies = new ArrayList<>();
@@ -63,7 +68,7 @@ public class CinemaManager implements IModel {
 
     }
 
-    public void editMovie(String data, String atribute, Movie movie) {
+    private void editMovie(String data, String atribute, Movie movie) {
         switch (atribute) {
             case "title":
                 movie.setTitle(data);
@@ -82,12 +87,12 @@ public class CinemaManager implements IModel {
                 break;
             default:
                 System.out.println("has esto we editMovie");
-                //TODO has esto we
+                // TODO has esto we
                 break;
         }
     }
 
-    public Movie searchMovieByName(String movieName) {
+    private Movie searchMovieByName(String movieName) {
 
         for (Movie movie : movies) {
             if (movie.getTitle().equals(movieName)) {
@@ -95,14 +100,27 @@ public class CinemaManager implements IModel {
             }
         }
         System.out.println("has esto we searchMovieByName");
-//TODO has esto we
+        // TODO has esto we
+        return null;
+    }
+    private Auditorium searchAuditoriumByName(String auditoriumName) {
+
+        for (Auditorium auditorium : auditoriums) {
+            if (auditorium.getName().equals(auditoriumName)) {
+                return auditorium;
+            }
+        }
+        System.out.println("has esto we searchAuditoriumByName");
+        // TODO has esto we
         return null;
     }
 
     @Override
-    public void createScreening() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'createScreening'");
+    public void createScreening(String AuditoriumName, Date date, String movieName) {
+        Movie movie = searchMovieByName(movieName);
+        Auditorium auditoriumn= searchAuditoriumByName(AuditoriumName);
+        screenings.add(new Screening(movie, date, auditoriumn));
+        //TODO validacionmes createScreening
     }
 
     @Override
