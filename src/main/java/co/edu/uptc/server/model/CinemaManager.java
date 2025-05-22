@@ -1,6 +1,7 @@
 package co.edu.uptc.server.model;
 
-import java.util.Date;
+import java.time.DayOfWeek;
+import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.ArrayList;
 
@@ -123,25 +124,31 @@ public class CinemaManager implements IModel {
     }
 
     @Override
-    public void createScreening(String auditoriumName, Date date, String movieName) {
+    public void createScreening(String auditoriumName, LocalDateTime date, String movieName) {
         Movie movie = searchMovieByName(movieName);
         Auditorium auditoriumn = searchAuditoriumByName(auditoriumName);
         findRigthShedule(movie, date, auditoriumn);
         // TODO validacionmes createScreening
     }
 
-    private void findRigthShedule(Movie movie, Date date, Auditorium auditoriumn) {
+    private void findRigthShedule(Movie movie, LocalDateTime date, Auditorium auditoriumn) {
         Screening screening = new Screening(movie, date, auditoriumn);
         if (isbetween(actualSchedule.getDateInit(), date, actualSchedule.getDateEnd())) {
             actualSchedule(movie.getTitle());
             actualSchedule.addScreening(movie.getTitle(), screening);
-        }else{
+        } else {
             futureSchedule.add(new Schedule(date, date));
         }
     }
-    private void findWeek(Date date){
-        date.toString();
+
+    private LocalDateTime findWeek(LocalDateTime date) {
+        int day =  date.getDayOfWeek().compareTo(DayOfWeek.MONDAY);
+        if (day > 0) {
+            
+        }
+        return null;
     }
+
     private void actualSchedule(String title) {
         Set<String> titles = actualSchedule.getScreenings().keySet();
         if (!titles.contains(title)) {
@@ -149,12 +156,12 @@ public class CinemaManager implements IModel {
         }
     }
 
-    private boolean isbetween(Date first, Date middle, Date second) {
-        return middle.after(first) & middle.before(second);
+    private boolean isbetween(LocalDateTime first, LocalDateTime middle, LocalDateTime second) {
+        return middle.isAfter(first) & middle.isBefore(second);
     }
 
     @Override
-    public void deleteScreening(String AuditoriumName, Date date) {
+    public void deleteScreening(String AuditoriumName, LocalDateTime date) {
 
         // for (Screening screening : screenings) {
         // if (screening.getScreeningAuditorium().getName().equals(AuditoriumName)

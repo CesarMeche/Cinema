@@ -1,6 +1,6 @@
 package co.edu.uptc.server.model.pojos;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,10 +11,10 @@ import lombok.Setter;
 
 public class Screening {
     private Movie movie;
-    private Date date;
+    private LocalDateTime date;
     private Auditorium screeningAuditorium;
     private boolean done;
-    public Screening(Movie movie, Date date, Auditorium screeningAuditorium) {
+    public Screening(Movie movie, LocalDateTime date, Auditorium screeningAuditorium) {
         this.movie = movie;
         this.date = date;
         this.screeningAuditorium = screeningAuditorium;

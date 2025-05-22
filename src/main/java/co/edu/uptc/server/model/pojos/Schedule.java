@@ -1,7 +1,8 @@
 package co.edu.uptc.server.model.pojos;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
+
 import java.util.HashMap;
 
 import lombok.Getter;
@@ -11,11 +12,11 @@ import lombok.Setter;
 @Setter
 public class Schedule {
     // private ArrayList<Screening> screenings;
-    private Date dateInit;
-    private Date dateEnd;
+    private LocalDateTime dateInit;
+    private LocalDateTime dateEnd;
     private HashMap<String, ArrayList<Screening>> screenings;
 
-    public Schedule(Date dateInit, Date dateEnd) {
+    public Schedule(LocalDateTime dateInit, LocalDateTime dateEnd) {
         this.dateInit = dateInit;
         this.dateEnd = dateEnd;
         screenings = new HashMap<>();

@@ -1,6 +1,6 @@
 package co.edu.uptc.server.interfaces;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 import co.edu.uptc.server.model.pojos.Movie;
 import co.edu.uptc.server.model.pojos.Screening;
@@ -17,8 +17,8 @@ public class IServer {
         //admin operations
         public void addMovie(Movie newmovie);
         public void editMovieData(String data,String atribute,String movieName);
-        public void createScreening(String Auditorium,Date date, String movieName);
-        public void deleteScreening(String AuditoriumName, Date date);
+        public void createScreening(String Auditorium,LocalDateTime date, String movieName);
+        public void deleteScreening(String AuditoriumName, LocalDateTime date);
         public void configurateAuditorium(String data,String auditoriumName,String option);
         public void generateReport();
 
