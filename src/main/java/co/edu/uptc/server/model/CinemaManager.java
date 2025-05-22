@@ -27,7 +27,7 @@ public class CinemaManager implements IModel {
 
     public CinemaManager() {
         movies = new ArrayList<>();
-        // screenings = new ArrayList<>();
+        futureSchedule = new ArrayList<>();
         auditoriums = new ArrayList<>();
     }
 
@@ -144,9 +144,9 @@ public class CinemaManager implements IModel {
     }
 
     private LocalDateTime findWeek(LocalDateTime date) {
-        int day =  date.getDayOfWeek().compareTo(DayOfWeek.MONDAY);
-        date=date.minusDays(day);
-        return LocalDateTime.of(date.getYear(), date.getMonth(),date.getDayOfMonth(), 0, 0, 0);
+        int day = date.getDayOfWeek().compareTo(DayOfWeek.MONDAY);
+        date = date.minusDays(day);
+        return LocalDateTime.of(date.getYear(), date.getMonth(), date.getDayOfMonth(), 0, 0, 0);
     }
 
     private void actualSchedule(String title) {
@@ -161,15 +161,24 @@ public class CinemaManager implements IModel {
     }
 
     @Override
-    public void deleteScreening(String AuditoriumName, LocalDateTime date) {
+    public void deleteScreening(String AuditoriumName, String moveiName, LocalDateTime date) {
+//TODO preguntar al ticher si queda tiempo
+        if (date.isBefore(actualSchedule.getDateEnd())) {
+            ArrayList<Screening> screenings = actualSchedule.getScreenings().get(moveiName);
+            int i = 0;
+            while (i < screenings.size()) {
+                Screening screening = screenings.get(i);
 
-        // for (Screening screening : screenings) {
-        // if (screening.getScreeningAuditorium().getName().equals(AuditoriumName)
-        // & screening.getDate().equals(date)) {
-        // screenings.remove(screening);
-        // }
-        // }
-        // // TODO validacionmes deleteScreening
+                if (screening.getScreeningAuditorium().equals(searchAuditoriumByName(AuditoriumName)) &&
+                        screening.getDate().equals(date)) {
+                            screenings.remove(screening);
+                    break;
+                }
+
+                i++;
+            }
+        }
+        // TODO validacionmes deleteScreening
 
     }
 
