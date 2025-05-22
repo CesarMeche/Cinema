@@ -13,7 +13,7 @@ public class IServer {
         public void validateBook();
         //admin operations
         public void addMovie(Movie newmovie);
-        public void editMovieData();
+        public void editMovieData(String data,String atribute,String movieName);
         public void createScreening();
         public void deleteScreening();
         public void configurateAuditorium();

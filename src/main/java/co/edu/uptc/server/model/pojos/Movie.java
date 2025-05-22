@@ -8,7 +8,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class Movie {
-    private String Tittle;
+    private String Title;
     private String calification;
     private String movieSynopsis;
     private String rate;
