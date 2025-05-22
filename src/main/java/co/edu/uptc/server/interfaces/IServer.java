@@ -22,7 +22,7 @@ public class IServer {
         public void createScreening(String Auditorium,LocalDateTime date, String movieName);
         public void deleteScreening(String AuditoriumName,String moveiName, LocalDateTime date);
         public void configurateAuditorium(String data,String auditoriumName,String option);
-         public String generateReport(LocalDateTime first, LocalDateTime second);
+         public int generateReport(LocalDateTime first, LocalDateTime second);
 
     }
     public interface IController {

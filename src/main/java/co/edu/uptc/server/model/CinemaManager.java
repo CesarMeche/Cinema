@@ -12,6 +12,7 @@ import co.edu.uptc.server.model.pojos.Auditorium;
 import co.edu.uptc.server.model.pojos.Movie;
 import co.edu.uptc.server.model.pojos.Schedule;
 import co.edu.uptc.server.model.pojos.Screening;
+import co.edu.uptc.server.model.pojos.Seat;
 import co.edu.uptc.server.structures.MyQueueu;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,6 +20,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class CinemaManager implements IModel {
+    // tentativo hacer que el admin pueda ver las reservas
     private Schedule actualSchedule;
     private ArrayList<Schedule> futureSchedule;
     private ArrayList<Schedule> previusSchedules;
@@ -42,22 +44,22 @@ public class CinemaManager implements IModel {
     public void selectSeat(String movieName, String auditoriumName, String dateString, String row, String seat) {
         LocalDateTime date = LocalDateTime.parse(dateString);
         ArrayList<Screening> screenings = actualSchedule.getScreenings().get(movieName);
-        Screening screening=findScreening(screenings, date, auditoriumName);
-        int rowNumber=Integer.parseInt(row);
-        int seatNumber=Integer.parseInt(seat);
-        if (!screening.isocuped(rowNumber,seatNumber)) {
+        Screening screening = findScreening(screenings, date, auditoriumName);
+        int rowNumber = Integer.parseInt(row);
+        int seatNumber = Integer.parseInt(seat);
+        if (!screening.isocuped(rowNumber, seatNumber)) {
             screening.getScreeningAuditorium().getSeat()[rowNumber][seatNumber].setOcuped(true);
-        }else{
-            //TODO hacer esta verificacion xdd throw new NullPointerException("ocupao");
+        } else {
+            // TODO hacer esta verificacion xdd throw new NullPointerException("ocupao");
         }
 
     }
 
-    private Screening findScreening(ArrayList<Screening> screenings,LocalDateTime date,String auditoriumName) {
+    private Screening findScreening(ArrayList<Screening> screenings, LocalDateTime date, String auditoriumName) {
         int i = 0;
-        Screening screening=null;
+        Screening screening = null;
         while (i < screenings.size()) {
-             screening= screenings.get(i);
+            screening = screenings.get(i);
             if (screening.getScreeningAuditorium().equals(searchAuditoriumByName(auditoriumName))
                     && screening.getDate().equals(date)) {
 
@@ -182,17 +184,18 @@ public class CinemaManager implements IModel {
     }
 
     private boolean isbetween(LocalDateTime first, LocalDateTime middle, LocalDateTime second) {
-        return middle.isAfter(first) & middle.isBefore(second);
+        return middle.isAfter(first) & middle.isBefore(second) || middle.getDayOfWeek() == DayOfWeek.MONDAY
+                || middle.getDayOfWeek() == DayOfWeek.FRIDAY;
     }
 
     @Override
     public void deleteScreening(String AuditoriumName, String moveiName, LocalDateTime date) {
         // TODO preguntar al ticher si queda tiempo
         // TODO combair el orden de los parametros pq sdjka
-        
+
         if (date.isBefore(actualSchedule.getDateEnd())) {
             ArrayList<Screening> screenings = actualSchedule.getScreenings().get(moveiName);
-            Screening screening=findScreening(screenings, date, AuditoriumName);
+            Screening screening = findScreening(screenings, date, AuditoriumName);
             screenings.remove(screening);
         }
         // TODO validacionmes deleteScreening
@@ -227,10 +230,45 @@ public class CinemaManager implements IModel {
     }
 
     @Override
-    public String generateReport(LocalDateTime first, LocalDateTime second) {
-        System.out.println("monie");
-        // TODO Auto-generated method stub
-        return "moniexdd";
+    public int generateReport(LocalDateTime first, LocalDateTime second) {
+        int sells = 0;
+        // TODO reduncancia
+        if (isbetween(first, actualSchedule.getDateInit(), second)) {
+            sells+=ocupedSeatsFromASchedule(actualSchedule, first, second);
+        } else {
+            for (Schedule schedule : previusSchedules) {
+                sells+=ocupedSeatsFromASchedule(schedule, first, second);
+            }
+        }
+            // TODO variable y validacion y reservas y asi
+        
+        sells *= 9000;
+        return sells;
+    }
+
+    private int ocupedSeatsFromASchedule(Schedule schedule, LocalDateTime first, LocalDateTime second) {
+        int sells = 0;
+        if (isbetween(first, schedule.getDateInit(), second)) {
+            for (ArrayList<Screening> screenings : schedule.getScreenings().values()) {
+                for (Screening screening : screenings) {
+                    sells += ocupedSeats(screening.getScreeningAuditorium());
+                }
+            }
+        }
+        return sells;
+    }
+
+    private int ocupedSeats(Auditorium auditorium) {
+        int sells = 0;
+        Seat[][] seats = auditorium.getSeat();
+        for (int i = 0; i < seats.length; i++) {
+            for (int j = 0; j < seats[i].length; j++) {
+                if (seats[i][j].isOcuped()) {
+                    sells++;
+                }
+            }
+        }
+        return sells;
     }
 
 }
