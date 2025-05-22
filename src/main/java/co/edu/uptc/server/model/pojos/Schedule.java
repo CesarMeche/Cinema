@@ -11,7 +11,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class Schedule {
-    // private ArrayList<Screening> screenings;
     private LocalDateTime dateInit;
     private LocalDateTime dateEnd;
     private HashMap<String, ArrayList<Screening>> screenings;

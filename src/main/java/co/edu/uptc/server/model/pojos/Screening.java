@@ -20,4 +20,8 @@ public class Screening {
         this.screeningAuditorium = screeningAuditorium;
         done=false;
     }
+    public boolean isocuped(int row,int seatNumber){
+        Seat[][] seats=screeningAuditorium.getSeat();        
+        return seats[row][seatNumber].isOcuped();
+    }
 }
