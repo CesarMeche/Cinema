@@ -187,21 +187,12 @@ public class CinemaManager implements IModel {
     @Override
     public void deleteScreening(String AuditoriumName, String moveiName, LocalDateTime date) {
         // TODO preguntar al ticher si queda tiempo
-        // TODO codigo repetido
+        // TODO combair el orden de los parametros pq sdjka
+        
         if (date.isBefore(actualSchedule.getDateEnd())) {
             ArrayList<Screening> screenings = actualSchedule.getScreenings().get(moveiName);
-            int i = 0;
-            while (i < screenings.size()) {
-                Screening screening = screenings.get(i);
-
-                if (screening.getScreeningAuditorium().equals(searchAuditoriumByName(AuditoriumName)) &&
-                        screening.getDate().equals(date)) {
-                    screenings.remove(screening);
-                    break;
-                }
-
-                i++;
-            }
+            Screening screening=findScreening(screenings, date, AuditoriumName);
+            screenings.remove(screening);
         }
         // TODO validacionmes deleteScreening
 
