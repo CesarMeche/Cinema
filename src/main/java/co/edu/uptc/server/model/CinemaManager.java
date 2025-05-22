@@ -16,7 +16,6 @@ public class CinemaManager implements IModel {
     private ArrayList<Movie> movies;
     private ArrayList<Screening> screenings;
     private ArrayList<Auditorium> auditoriums;
-    
 
     public CinemaManager() {
         movies = new ArrayList<>();
@@ -103,6 +102,7 @@ public class CinemaManager implements IModel {
         // TODO has esto we
         return null;
     }
+
     private Auditorium searchAuditoriumByName(String auditoriumName) {
 
         for (Auditorium auditorium : auditoriums) {
@@ -118,15 +118,21 @@ public class CinemaManager implements IModel {
     @Override
     public void createScreening(String AuditoriumName, Date date, String movieName) {
         Movie movie = searchMovieByName(movieName);
-        Auditorium auditoriumn= searchAuditoriumByName(AuditoriumName);
+        Auditorium auditoriumn = searchAuditoriumByName(AuditoriumName);
         screenings.add(new Screening(movie, date, auditoriumn));
-        //TODO validacionmes createScreening
+        // TODO validacionmes createScreening
     }
 
     @Override
-    public void deleteScreening() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'deleteScreening'");
+    public void deleteScreening(String AuditoriumName, Date date) {
+
+        for (Screening screening : screenings) {
+            if (screening.getScreeningAuditorium().getName().equals(AuditoriumName)&screening.getDate().equals(date)) {
+                  screenings.remove(screening);          
+            }
+        }
+          // TODO validacionmes deleteScreening
+
     }
 
     @Override
