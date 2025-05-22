@@ -8,9 +8,16 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@AllArgsConstructor
+
 public class Screening {
     private Movie movie;
     private Date date;
     private Auditorium screeningAuditorium;
+    private boolean done;
+    public Screening(Movie movie, Date date, Auditorium screeningAuditorium) {
+        this.movie = movie;
+        this.date = date;
+        this.screeningAuditorium = screeningAuditorium;
+        done=false;
+    }
 }

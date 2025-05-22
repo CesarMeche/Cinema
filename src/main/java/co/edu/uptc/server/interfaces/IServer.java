@@ -1,14 +1,15 @@
 package co.edu.uptc.server.interfaces;
 
-import java.sql.Date;
+import java.util.Date;
 
 import co.edu.uptc.server.model.pojos.Movie;
+import co.edu.uptc.server.model.pojos.Screening;
 
 
 public class IServer {
     public interface IModel {
         //client operations
-        public void getMovieSchedule( );
+        public Screening[] getMovieSchedule( );
         public void selectSeat();
         public void createBook();
         public void checkBook();
