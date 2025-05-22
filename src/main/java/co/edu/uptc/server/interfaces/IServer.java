@@ -18,7 +18,7 @@ public class IServer {
         public void editMovieData(String data,String atribute,String movieName);
         public void createScreening(String Auditorium,Date date, String movieName);
         public void deleteScreening(String AuditoriumName, Date date);
-        public void configurateAuditorium();
+        public void configurateAuditorium(String data,String auditoriumName,String option);
         public void generateReport();
 
     }

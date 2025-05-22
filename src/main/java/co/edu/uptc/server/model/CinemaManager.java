@@ -19,6 +19,8 @@ public class CinemaManager implements IModel {
 
     public CinemaManager() {
         movies = new ArrayList<>();
+        screenings = new ArrayList<>();
+        auditoriums = new ArrayList<>();
     }
 
     // user operations
@@ -116,9 +118,9 @@ public class CinemaManager implements IModel {
     }
 
     @Override
-    public void createScreening(String AuditoriumName, Date date, String movieName) {
+    public void createScreening(String auditoriumName, Date date, String movieName) {
         Movie movie = searchMovieByName(movieName);
-        Auditorium auditoriumn = searchAuditoriumByName(AuditoriumName);
+        Auditorium auditoriumn = searchAuditoriumByName(auditoriumName);
         screenings.add(new Screening(movie, date, auditoriumn));
         // TODO validacionmes createScreening
     }
@@ -127,24 +129,47 @@ public class CinemaManager implements IModel {
     public void deleteScreening(String AuditoriumName, Date date) {
 
         for (Screening screening : screenings) {
-            if (screening.getScreeningAuditorium().getName().equals(AuditoriumName)&screening.getDate().equals(date)) {
-                  screenings.remove(screening);          
+            if (screening.getScreeningAuditorium().getName().equals(AuditoriumName)
+                    & screening.getDate().equals(date)) {
+                screenings.remove(screening);
             }
         }
-          // TODO validacionmes deleteScreening
+        // TODO validacionmes deleteScreening
 
     }
 
     @Override
-    public void configurateAuditorium() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'configurateAuditorium'");
+    public void configurateAuditorium(String data, String auditoriumName, String option) {
+        Auditorium auditoriumn = searchAuditoriumByName(auditoriumName);
+        switch (option) {
+            case "name":
+                auditoriumn.setName(data);
+                break;
+            case "size":
+                editAuditorium(data, auditoriumn);
+                break;
+            default:
+                // TODO HAS ESTO configurateAuditorium
+                break;
+        }
+    }
+
+    private void editAuditorium(String data, Auditorium auditoriumn) {
+        String[] parts = data.split(";");
+        int[] size = new int[parts.length];
+
+        for (int i = 0; i < parts.length; i++) {
+            size[i] = Integer.parseInt(parts[i]);
+        }
+        int index = auditoriums.indexOf(auditoriumn);
+        auditoriums.set(index, new Auditorium(auditoriumn.getName(), size[0], size[1]));
     }
 
     @Override
     public void generateReport() {
+        System.out.println("monie");
         // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'generateReport'");
+
     }
 
 }
