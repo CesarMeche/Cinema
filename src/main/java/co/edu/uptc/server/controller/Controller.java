@@ -3,7 +3,7 @@ package co.edu.uptc.server.controller;
 import co.edu.uptc.server.interfaces.IServer.IController;
 
 public class Controller implements IController{
-
+    private CinemaConections cc;
     @Override
     public void getMovieSchedule() {
         // TODO Auto-generated method stub

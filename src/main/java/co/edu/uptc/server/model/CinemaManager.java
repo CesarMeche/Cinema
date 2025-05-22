@@ -12,7 +12,7 @@ import co.edu.uptc.server.model.pojos.Auditorium;
 import co.edu.uptc.server.model.pojos.Movie;
 import co.edu.uptc.server.model.pojos.Schedule;
 import co.edu.uptc.server.model.pojos.Screening;
-
+import co.edu.uptc.server.structures.MyQueueu;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -24,6 +24,7 @@ public class CinemaManager implements IModel {
     private ArrayList<Schedule> previusSchedules;
     private ArrayList<Movie> movies;
     private ArrayList<Auditorium> auditoriums;
+    private MyQueueu books;
 
     public CinemaManager() {
         movies = new ArrayList<>();
