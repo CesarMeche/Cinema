@@ -5,14 +5,17 @@ import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import co.edu.uptc.server.interfaces.IServer.IModel;
-import co.edu.uptc.server.model.enums.EditMovie;
+
 import co.edu.uptc.server.model.pojos.Auditorium;
+import co.edu.uptc.server.model.pojos.Book;
 import co.edu.uptc.server.model.pojos.Movie;
 import co.edu.uptc.server.model.pojos.Schedule;
 import co.edu.uptc.server.model.pojos.Screening;
 import co.edu.uptc.server.model.pojos.Seat;
+import co.edu.uptc.server.persistence.FileManager;
 import co.edu.uptc.server.structures.MyQueueu;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,14 +27,77 @@ public class CinemaManager implements IModel {
     private Schedule actualSchedule;
     private ArrayList<Schedule> futureSchedule;
     private ArrayList<Schedule> previusSchedules;
-    private ArrayList<Movie> movies;
-    private ArrayList<Auditorium> auditoriums;
-    private MyQueueu books;
+    private ArrayList<Movie> moviesList;
+    private ArrayList<Auditorium> auditoriumsList;
+    private MyQueueu<Book> booksqQueueu;
 
     public CinemaManager() {
-        movies = new ArrayList<>();
+        moviesList = new ArrayList<>();
+        // TODO future validations
+        
         futureSchedule = new ArrayList<>();
-        auditoriums = new ArrayList<>();
+        previusSchedules = new ArrayList<>();
+        auditoriumsList = new ArrayList<>();
+        booksqQueueu = new MyQueueu<>();
+        loadData();
+    }
+
+    private void loadData() {
+        FileManager fm = new FileManager();
+        List<List> data = fm.getData();
+        loadMovies((List<Movie>)data.get(0));
+        loadAuditoriums((List<Auditorium>)data.get(1));
+        loadSchedules(data.get(2));
+        /*
+         * TODO ver que pedo los books
+         * //loadBooks(data.get(3));
+         */
+    }
+
+    private void loadAuditoriums(List<Auditorium> auditoriums) {
+        for (Auditorium auditorium : auditoriums) {
+            auditoriumsList.add(auditorium);
+        }
+    }
+
+    private void loadBooks(List<Book> books) {
+        for (Book book : books) {
+            booksqQueueu.push(book);
+        }
+    }
+
+    private void loadSchedules(List<Schedule> schedules) {
+        if (!schedules.isEmpty()) {
+            actualSchedule = schedules.get(0);
+            for (int i = 1; i < schedules.size(); i++) {
+                previusSchedules.add(schedules.get(i));
+            }
+        }
+    }
+
+    private void loadMovies(List<Movie> moviesList) {
+        if (!moviesList.isEmpty()) {
+            for (Movie movie : moviesList) {
+                addMovie(movie);
+            }
+        }
+    }
+
+    public void saveData() {
+        FileManager fm = new FileManager();
+        ArrayList data = new ArrayList<>();
+        data.add(moviesList);
+        data.add(auditoriumsList);
+        ArrayList schedule = new ArrayList<>();
+        schedule.add(actualSchedule);
+        schedule.addAll(futureSchedule);
+        schedule.addAll(previusSchedules);
+        data.add(schedule);
+        /*
+         * TODO ver que pedo los books
+         * data.add(booksqQueueu);
+         */
+        fm.saveData(data);
     }
 
     // user operations
@@ -92,7 +158,7 @@ public class CinemaManager implements IModel {
     // admin operations
     @Override
     public void addMovie(Movie newMovie) {
-        movies.add(newMovie);
+        moviesList.add(newMovie);
     }
 
     @Override
@@ -130,7 +196,7 @@ public class CinemaManager implements IModel {
 
     private Movie searchMovieByName(String movieName) {
 
-        for (Movie movie : movies) {
+        for (Movie movie : moviesList) {
             if (movie.getTitle().equals(movieName)) {
                 return movie;
             }
@@ -142,7 +208,7 @@ public class CinemaManager implements IModel {
 
     private Auditorium searchAuditoriumByName(String auditoriumName) {
 
-        for (Auditorium auditorium : auditoriums) {
+        for (Auditorium auditorium : auditoriumsList) {
             if (auditorium.getName().equals(auditoriumName)) {
                 return auditorium;
             }
@@ -162,12 +228,16 @@ public class CinemaManager implements IModel {
 
     private void findRigthShedule(Movie movie, LocalDateTime date, Auditorium auditoriumn) {
         Screening screening = new Screening(movie, date, auditoriumn);
-        if (isbetween(actualSchedule.getDateInit(), date, actualSchedule.getDateEnd())) {
-            actualSchedule(movie.getTitle());
-            actualSchedule.addScreening(movie.getTitle(), screening);
-        } else {
-            futureSchedule.add(new Schedule(findWeek(date), findWeek(date).plusDays(6)));
+        if (actualSchedule==null) {
+            actualSchedule= new Schedule(findWeek(date), findWeek(date).plusDays(6));
         }
+            if (isbetween(actualSchedule.getDateInit(), date, actualSchedule.getDateEnd())) {
+                actualSchedule(movie.getTitle());
+                actualSchedule.addScreening(movie.getTitle(), screening);
+            } else {
+                futureSchedule.add(new Schedule(findWeek(date), findWeek(date).plusDays(6)));
+            }
+        
     }
 
     private LocalDateTime findWeek(LocalDateTime date) {
@@ -225,8 +295,8 @@ public class CinemaManager implements IModel {
         for (int i = 0; i < parts.length; i++) {
             size[i] = Integer.parseInt(parts[i]);
         }
-        int index = auditoriums.indexOf(auditoriumn);
-        auditoriums.set(index, new Auditorium(auditoriumn.getName(), size[0], size[1]));
+        int index = auditoriumsList.indexOf(auditoriumn);
+        auditoriumsList.set(index, new Auditorium(auditoriumn.getName(), size[0], size[1]));
     }
 
     @Override
@@ -234,14 +304,14 @@ public class CinemaManager implements IModel {
         int sells = 0;
         // TODO reduncancia
         if (isbetween(first, actualSchedule.getDateInit(), second)) {
-            sells+=ocupedSeatsFromASchedule(actualSchedule, first, second);
+            sells += ocupedSeatsFromASchedule(actualSchedule, first, second);
         } else {
             for (Schedule schedule : previusSchedules) {
-                sells+=ocupedSeatsFromASchedule(schedule, first, second);
+                sells += ocupedSeatsFromASchedule(schedule, first, second);
             }
         }
-            // TODO variable y validacion y reservas y asi
-        
+        // TODO variable y validacion y reservas y asi
+
         sells *= 9000;
         return sells;
     }

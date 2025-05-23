@@ -2,10 +2,12 @@ package co.edu.uptc.server.model.pojos;
 
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
+@NoArgsConstructor
 public class Auditorium {
     private Seat[][] seat;
     private String name;

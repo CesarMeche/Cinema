@@ -6,10 +6,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
+@NoArgsConstructor
 public class Schedule {
     private LocalDateTime dateInit;
     private LocalDateTime dateEnd;
@@ -20,6 +22,8 @@ public class Schedule {
         this.dateEnd = dateEnd;
         screenings = new HashMap<>();
     }
+
+    
 
     public void addScreening(String title, Screening screening) {
         screenings.get(title).add(screening);
