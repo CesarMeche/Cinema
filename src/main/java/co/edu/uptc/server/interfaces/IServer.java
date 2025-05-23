@@ -12,10 +12,11 @@ public class IServer {
     public interface IModel {
         //client operations
         public  HashMap<String, ArrayList<Screening>> getMovieSchedule( );
-        public void selectSeat(String moviename,String auditoriumName,String date,String row,String seat);
+        public boolean selectSeat(String moviename,String auditoriumName,String date,String row,String seat);
         public void createBook();
         public void checkBook();
         public void validateBook();
+        public void cancelBook();
         //admin operations
         public void addMovie(Movie newmovie);
         public void editMovieData(String data,String atribute,String movieName);

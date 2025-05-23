@@ -31,10 +31,11 @@ public class CinemaManager implements IModel {
     private ArrayList<Auditorium> auditoriumsList;
     private MyQueueu<Book> booksqQueueu;
 
+    
     public CinemaManager() {
         moviesList = new ArrayList<>();
         // TODO future validations
-        
+
         futureSchedule = new ArrayList<>();
         previusSchedules = new ArrayList<>();
         auditoriumsList = new ArrayList<>();
@@ -45,8 +46,8 @@ public class CinemaManager implements IModel {
     private void loadData() {
         FileManager fm = new FileManager();
         List<List> data = fm.getData();
-        loadMovies((List<Movie>)data.get(0));
-        loadAuditoriums((List<Auditorium>)data.get(1));
+        loadMovies((List<Movie>) data.get(0));
+        loadAuditoriums((List<Auditorium>) data.get(1));
         loadSchedules(data.get(2));
         /*
          * TODO ver que pedo los books
@@ -107,7 +108,7 @@ public class CinemaManager implements IModel {
     }
 
     @Override
-    public void selectSeat(String movieName, String auditoriumName, String dateString, String row, String seat) {
+    public boolean selectSeat(String movieName, String auditoriumName, String dateString, String row, String seat) {
         LocalDateTime date = LocalDateTime.parse(dateString);
         ArrayList<Screening> screenings = actualSchedule.getScreenings().get(movieName);
         Screening screening = findScreening(screenings, date, auditoriumName);
@@ -115,8 +116,10 @@ public class CinemaManager implements IModel {
         int seatNumber = Integer.parseInt(seat);
         if (!screening.isocuped(rowNumber, seatNumber)) {
             screening.getScreeningAuditorium().getSeat()[rowNumber][seatNumber].setOcuped(true);
+            return true;
         } else {
             // TODO hacer esta verificacion xdd throw new NullPointerException("ocupao");
+            return false;
         }
 
     }
@@ -153,6 +156,9 @@ public class CinemaManager implements IModel {
     public void validateBook() {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'validateBook'");
+    }
+
+    public void cancelBook() {
     }
 
     // admin operations
@@ -228,16 +234,16 @@ public class CinemaManager implements IModel {
 
     private void findRigthShedule(Movie movie, LocalDateTime date, Auditorium auditoriumn) {
         Screening screening = new Screening(movie, date, auditoriumn);
-        if (actualSchedule==null) {
-            actualSchedule= new Schedule(findWeek(date), findWeek(date).plusDays(6));
+        if (actualSchedule == null) {
+            actualSchedule = new Schedule(findWeek(date), findWeek(date).plusDays(6));
         }
-            if (isbetween(actualSchedule.getDateInit(), date, actualSchedule.getDateEnd())) {
-                actualSchedule(movie.getTitle());
-                actualSchedule.addScreening(movie.getTitle(), screening);
-            } else {
-                futureSchedule.add(new Schedule(findWeek(date), findWeek(date).plusDays(6)));
-            }
-        
+        if (isbetween(actualSchedule.getDateInit(), date, actualSchedule.getDateEnd())) {
+            actualSchedule(movie.getTitle());
+            actualSchedule.addScreening(movie.getTitle(), screening);
+        } else {
+            futureSchedule.add(new Schedule(findWeek(date), findWeek(date).plusDays(6)));
+        }
+
     }
 
     private LocalDateTime findWeek(LocalDateTime date) {

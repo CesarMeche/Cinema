@@ -7,8 +7,13 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
-public class JsonResponse {
+public class JsonResponse<T> {
     private String status;
     private String message;
-    private String data;
+    private T data;
+    public JsonResponse(T data) {
+        this.data = data;
+        this.message="";
+        this.status="";
+    }
 }
