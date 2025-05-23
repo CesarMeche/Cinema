@@ -17,6 +17,7 @@ public class ConectionManager {
     private Gson gson;
 
     public ConectionManager(Socket socket) {
+        //chanchito feliz
         this.socket = socket;
         this.gson = new Gson();
         try {
