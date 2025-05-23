@@ -68,7 +68,7 @@ public class CinemaUserConections extends Thread {
 
     private void getMovieSchedule() {
         try {
-            conectionManager.sendMessage(new JsonResponse<>(cinemaManager.getActualSchedule()));
+            conectionManager.sendMessage(new JsonResponse<>("","",cinemaManager.getActualSchedule()));
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

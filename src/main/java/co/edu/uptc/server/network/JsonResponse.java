@@ -11,9 +11,5 @@ public class JsonResponse<T> {
     private String status;
     private String message;
     private T data;
-    public JsonResponse(T data) {
-        this.data = data;
-        this.message="";
-        this.status="";
-    }
+
 }

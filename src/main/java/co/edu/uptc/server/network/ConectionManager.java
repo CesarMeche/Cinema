@@ -51,30 +51,4 @@ public class ConectionManager {
         }
     }
 
-    // public void sendObject(Object object) {
-    // try {
-    // sendMessage(new JsonResponse("", null, objectToMsg(object)));
-    // } catch (IOException e) {
-    // // TODO Auto-generated catch block
-    // e.printStackTrace();
-    // }
-    // }
-
-    // private String objectToMsg(Object object) {
-    // try {
-    // return mapper.writeValueAsString(object);
-    // } catch (JsonProcessingException e) {
-    // // TODO Auto-generated catch block
-    // e.printStackTrace();
-    // return "error";
-    // }
-    // }
-
-    // public <T> T msgToObject(JsonResponse<T> jResponse) {
-    // try {
-    // return mapper.readValue(jResponse.getData(), jResponse.getObjectClass());
-    // } catch (JsonProcessingException e) {
-    // e.printStackTrace();
-    // return null;
-    // }
 }

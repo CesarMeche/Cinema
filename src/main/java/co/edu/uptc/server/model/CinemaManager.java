@@ -31,7 +31,6 @@ public class CinemaManager implements IModel {
     private ArrayList<Auditorium> auditoriumsList;
     private MyQueueu<Book> booksqQueueu;
 
-    
     public CinemaManager() {
         moviesList = new ArrayList<>();
         // TODO future validations
@@ -163,15 +162,19 @@ public class CinemaManager implements IModel {
 
     // admin operations
     @Override
-    public void addMovie(Movie newMovie) {
+    public boolean addMovie(Movie newMovie) {
         moviesList.add(newMovie);
+        return true;
     }
 
     @Override
-    public void editMovieData(String data, String atribute, String movieName) {
+    public boolean editMovieData(String data, String atribute, String movieName) {
         Movie movie = searchMovieByName(movieName);
         if (movie != null) {
             editMovie(data, atribute, movie);
+            return true;
+        } else {
+            return false;
         }
 
     }
@@ -225,11 +228,16 @@ public class CinemaManager implements IModel {
     }
 
     @Override
-    public void createScreening(String auditoriumName, LocalDateTime date, String movieName) {
+    public boolean createScreening(String auditoriumName, LocalDateTime date, String movieName) {
         Movie movie = searchMovieByName(movieName);
-        Auditorium auditoriumn = searchAuditoriumByName(auditoriumName);
-        findRigthShedule(movie, date, auditoriumn);
-        // TODO validacionmes createScreening
+        if (movie != null) {
+
+            Auditorium auditoriumn = searchAuditoriumByName(auditoriumName);
+            findRigthShedule(movie, date, auditoriumn);
+            // TODO validacionmes createScreening
+            return true;
+        }
+        return false;
     }
 
     private void findRigthShedule(Movie movie, LocalDateTime date, Auditorium auditoriumn) {
@@ -265,7 +273,7 @@ public class CinemaManager implements IModel {
     }
 
     @Override
-    public void deleteScreening(String AuditoriumName, String moveiName, LocalDateTime date) {
+    public boolean deleteScreening(String AuditoriumName, LocalDateTime date, String moveiName) {
         // TODO preguntar al ticher si queda tiempo
         // TODO combair el orden de los parametros pq sdjka
 
@@ -273,24 +281,31 @@ public class CinemaManager implements IModel {
             ArrayList<Screening> screenings = actualSchedule.getScreenings().get(moveiName);
             Screening screening = findScreening(screenings, date, AuditoriumName);
             screenings.remove(screening);
+
         }
         // TODO validacionmes deleteScreening
-
+        return false;
     }
 
     @Override
-    public void configurateAuditorium(String data, String auditoriumName, String option) {
+    public boolean configurateAuditorium(String data, String auditoriumName, String option) {
         Auditorium auditoriumn = searchAuditoriumByName(auditoriumName);
-        switch (option) {
-            case "name":
-                auditoriumn.setName(data);
-                break;
-            case "size":
-                editAuditorium(data, auditoriumn);
-                break;
-            default:
-                // TODO HAS ESTO configurateAuditorium
-                break;
+        if (auditoriumn != null) {
+
+            switch (option) {
+                case "name":
+                    auditoriumn.setName(data);
+                    break;
+                case "size":
+                    editAuditorium(data, auditoriumn);
+                    break;
+                default:
+                    // TODO HAS ESTO configurateAuditorium
+                    break;
+            }
+            return true;
+        }{
+            return false;
         }
     }
 
