@@ -1,8 +1,6 @@
 package co.edu.uptc.server.network;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+
 import com.google.gson.Gson;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -10,14 +8,13 @@ import java.io.IOException;
 import java.net.Socket;
 
 public class ConectionManager {
-    private ObjectMapper mapper;
     private Socket socket;
     private DataInputStream dataInput;
     private DataOutputStream dataOutput;
     private Gson gson;
 
     public ConectionManager(Socket socket) {
-        //chanchito feliz
+        // chanchito feliz
         this.socket = socket;
         this.gson = new Gson();
         try {
@@ -37,6 +34,13 @@ public class ConectionManager {
     public JsonResponse receiveMessage() throws IOException {
         String jsonMessage = dataInput.readUTF();
         return gson.fromJson(jsonMessage, JsonResponse.class);
+    }
+
+    public <T> JsonResponse<T> convertData(JsonResponse<?> response, Class<T> classType) {
+        String jsonData = gson.toJson(response.getData());
+        T convertedData = gson.fromJson(jsonData, classType);
+        JsonResponse<T> newResponse = new JsonResponse<>(response.getStatus(),response.getMessage(),convertedData);
+        return newResponse;
     }
 
     public void close() {

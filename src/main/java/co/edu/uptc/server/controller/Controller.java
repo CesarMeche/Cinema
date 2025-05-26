@@ -32,8 +32,9 @@ public class Controller {
             this.socket = serverSocket.accept();
             System.out.println("Client connected");
             this.conectionManager = new ConectionManager(socket);
-            CinemaUserConections threadClient = new CinemaUserConections(conectionManager, cm);
+            CinemaAdminConections threadClient= new CinemaAdminConections(conectionManager, cm);
             threadClient.start();
+            System.out.println("Server started");
          }
       } catch (IOException e) {
 
