@@ -60,8 +60,12 @@ public class CinemaAdminConections extends Thread {
         }
     }
 
-    private void generateReport(JsonResponse<LocalDateTime[]> message) {
-        int report = cinemaManager.generateReport(message.getData()[0], message.getData()[1]);
+    private void generateReport(JsonResponse<String[]> message) {
+        message = conectionManager.convertData(message, String[].class);
+        System.out.println(message.getData());
+        LocalDateTime a=LocalDateTime.parse(message.getData()[0]);
+        LocalDateTime b=LocalDateTime.parse(message.getData()[1]);
+        int report = cinemaManager.generateReport(a, b);
         // TODO mejorar msg
         // String msg = answer? Msg.DONE.name() : Msg.Error.name();
         try {

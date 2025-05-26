@@ -33,7 +33,7 @@ public class CinemaManager implements IModel {
 
     public CinemaManager() {
         moviesList = new ArrayList<>();
-        // TODO future validations
+        actualSchedule= new Schedule();
 
         futureSchedule = new ArrayList<>();
         previusSchedules = new ArrayList<>();
