@@ -33,8 +33,6 @@ public class CinemaManager implements IModel {
 
     public CinemaManager() {
         moviesList = new ArrayList<>();
-        actualSchedule= new Schedule();
-
         futureSchedule = new ArrayList<>();
         previusSchedules = new ArrayList<>();
         auditoriumsList = new ArrayList<>();
@@ -241,7 +239,9 @@ public class CinemaManager implements IModel {
     }
 
     private void findRigthShedule(Movie movie, LocalDateTime date, Auditorium auditoriumn) {
+
         Screening screening = new Screening(movie, date, auditoriumn);
+        //TODO validar si si es actual
         if (actualSchedule == null) {
             actualSchedule = new Schedule(findWeek(date), findWeek(date).plusDays(6));
         }
@@ -249,7 +249,13 @@ public class CinemaManager implements IModel {
             actualSchedule(movie.getTitle());
             actualSchedule.addScreening(movie.getTitle(), screening);
         } else {
-            futureSchedule.add(new Schedule(findWeek(date), findWeek(date).plusDays(6)));
+            Schedule schedule=new Schedule(findWeek(date), findWeek(date).plusDays(6));
+            if (!schedule.getScreenings().containsKey(screening.getMovie().getTitle())) {
+                schedule.addMovie(screening.getMovie().getTitle());
+            }
+            schedule.addScreening(screening.getMovie().getTitle(),screening);
+            futureSchedule.add(schedule);
+
         }
 
     }

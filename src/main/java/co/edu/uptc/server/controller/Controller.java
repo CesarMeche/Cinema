@@ -1,21 +1,23 @@
 package co.edu.uptc.server.controller;
 
 import co.edu.uptc.server.model.CinemaManager;
+import co.edu.uptc.server.model.pojos.Movie;
 import co.edu.uptc.server.network.ConectionManager;
 import co.edu.uptc.server.network.JsonResponse;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.time.LocalDateTime;
 
 public class Controller {
-   CinemaManager cm;
+   private CinemaManager cm;
    private ServerSocket serverSocket;
    private Socket socket;
    private int port;
 
    public Controller() {
-      this.port = 1234;
+      this.port = 1235;
       try {
          this.serverSocket = new ServerSocket(port);
       } catch (IOException e) {
@@ -26,13 +28,16 @@ public class Controller {
 
    public void initCinemaSystem() {
       cm = new CinemaManager();
+      //   cm.createScreening("papaya",LocalDateTime.now(),"mikus");
+      //   cm.createScreening("papaya",LocalDateTime.now(),"papuh movie");
+      //   cm.saveData();
       System.out.println("Server started");
       try {
          while (true) {
             this.socket = serverSocket.accept();
             System.out.println("Client connected");
             ConectionManager conectionManager = new ConectionManager(socket);
-            JsonResponse status = conectionManager.receiveMessage();
+            JsonResponse status = conectionManager.receiveMessage(String.class);
             System.out.println("");
             switch (status.getMessage()) {
                case "user":

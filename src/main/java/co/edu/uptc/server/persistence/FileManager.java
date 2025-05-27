@@ -31,10 +31,10 @@ public class FileManager {
 	public FileManager() {
 		mapper = new ObjectMapper();
 		mapper.registerModule(new JavaTimeModule());
-		this.moviesFile = new File("inal\\src\\main\\resources\\Movies.json");
-		this.auditoriumsFile = new File("inal\\src\\main\\resources\\Auditoriums.json");
-		this.schedulesFile = new File("inal\\src\\main\\resources\\Shedules.json");
-		this.booksFile = new File("inal\\src\\main\\resources\\Books.json");
+		this.moviesFile = new File("src\\main\\resources\\Movies.json");
+		this.auditoriumsFile = new File("src\\main\\resources\\Auditoriums.json");
+		this.schedulesFile = new File("src\\main\\resources\\Shedules.json");
+		this.booksFile = new File("src\\main\\resources\\Books.json");
 	}
 
 	public List<List> getData() {

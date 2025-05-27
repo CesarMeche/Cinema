@@ -19,7 +19,7 @@ public class CinemaUserConections extends Thread {
 
     @Override
     public void run() {
-        boolean conected=true;
+        boolean conected = true;
         while (conected) {
 
             JsonResponse message;
@@ -49,12 +49,17 @@ public class CinemaUserConections extends Thread {
                 }
             } catch (IOException e) {
                 System.out.println("Cliente desconectado: " + e.getMessage());
+                conected = false;
             } catch (IllegalArgumentException e) {
                 System.out.println("Opción desconocida recibida: " + e.getMessage());
-            } finally {
+                conected = false;
+            }
+            if (!conected)
+
+            {
                 conectionManager.close();
                 System.out.println("Conexión finalizada con el cliente.");
-                conected=false;
+                conected = false;
 
             }
         }
@@ -77,6 +82,7 @@ public class CinemaUserConections extends Thread {
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
     }

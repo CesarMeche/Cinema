@@ -23,8 +23,9 @@ public class CinemaAdminConections extends Thread {
 
     @Override
     public void run() {
-        try {
-            while (true) {
+        boolean conected = true;
+        while (conected) {
+            try {
                 JsonResponse message = conectionManager.receiveMessage();
                 adminOption = AdminOptions.valueOf(message.getStatus());
                 switch (adminOption) {
@@ -49,22 +50,27 @@ public class CinemaAdminConections extends Thread {
                     default:
                         System.out.println("Opción inválida");
                 }
+            } catch (IOException e) {
+                System.out.println("Cliente desconectado: " + e.getMessage());
+            } catch (IllegalArgumentException e) {
+                System.out.println("Opción desconocida recibida: " + e.getMessage());
             }
-        } catch (IOException e) {
-            System.out.println("Cliente desconectado: " + e.getMessage());
-        } catch (IllegalArgumentException e) {
-            System.out.println("Opción desconocida recibida: " + e.getMessage());
-        } finally {
-            conectionManager.close();
-            System.out.println("Conexión finalizada con el cliente.");
+            if (!conected)
+
+            {
+                conectionManager.close();
+                System.out.println("Conexión finalizada con el cliente.");
+                conected = false;
+
+            }
         }
     }
 
     private void generateReport(JsonResponse<String[]> message) {
         message = conectionManager.convertData(message, String[].class);
         System.out.println(message.getData());
-        LocalDateTime a=LocalDateTime.parse(message.getData()[0]);
-        LocalDateTime b=LocalDateTime.parse(message.getData()[1]);
+        LocalDateTime a = LocalDateTime.parse(message.getData()[0]);
+        LocalDateTime b = LocalDateTime.parse(message.getData()[1]);
         int report = cinemaManager.generateReport(a, b);
         // TODO mejorar msg
         // String msg = answer? Msg.DONE.name() : Msg.Error.name();
@@ -99,10 +105,12 @@ public class CinemaAdminConections extends Thread {
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
+            
         }
     }
 
     private void createScreening(JsonResponse<String[]> message) {
+        String[] data = message.getData();
         boolean answer = cinemaManager.createScreening(message.getData()[0], LocalDateTime.parse(message.getData()[1]),
                 message.getData()[2]);
         // TODO mejorar msg
