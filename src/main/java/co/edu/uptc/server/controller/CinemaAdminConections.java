@@ -74,12 +74,9 @@ public class CinemaAdminConections extends Thread {
         int report = cinemaManager.generateReport(a, b);
         // TODO mejorar msg
         // String msg = answer? Msg.DONE.name() : Msg.Error.name();
-        try {
-            conectionManager.sendMessage(new JsonResponse<Integer>("", Msg.DONE.name(), report));
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+
+        conectionManager.sendMessage(new JsonResponse<Integer>("", Msg.DONE.name(), report));
+
     }
 
     private void configurateAuditorium(JsonResponse<String[]> message) {
@@ -87,12 +84,9 @@ public class CinemaAdminConections extends Thread {
                 message.getData()[2]);
         // TODO mejorar msg
         String msg = answer ? Msg.DONE.name() : Msg.Error.name();
-        try {
-            conectionManager.sendMessage(new JsonResponse<Boolean>("", msg, answer));
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        
+        conectionManager.sendMessage(new JsonResponse<Boolean>("", msg, answer));
+
     }
 
     private void deleteScreening(JsonResponse<String[]> message) {
@@ -100,27 +94,21 @@ public class CinemaAdminConections extends Thread {
                 message.getData()[2]);
         // TODO mejorar msg
         String msg = answer ? Msg.DONE.name() : Msg.Error.name();
-        try {
-            conectionManager.sendMessage(new JsonResponse<Boolean>("", msg, answer));
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            
-        }
+
+        conectionManager.sendMessage(new JsonResponse<Boolean>("", msg, answer));
+
     }
 
     private void createScreening(JsonResponse<String[]> message) {
+        message = conectionManager.convertData(message, String[].class);
         String[] data = message.getData();
         boolean answer = cinemaManager.createScreening(message.getData()[0], LocalDateTime.parse(message.getData()[1]),
                 message.getData()[2]);
         // TODO mejorar msg
         String msg = answer ? Msg.DONE.name() : Msg.Error.name();
-        try {
-            conectionManager.sendMessage(new JsonResponse<Boolean>("", msg, answer));
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+
+        conectionManager.sendMessage(new JsonResponse<Boolean>("", msg, answer));
+
     }
 
     private void editMovieData(JsonResponse<String[]> message) {
@@ -128,26 +116,20 @@ public class CinemaAdminConections extends Thread {
         boolean answer = cinemaManager.editMovieData(message.getData()[0], message.getData()[1], message.getData()[2]);
         // TODO mejorar msg
         String msg = answer ? Msg.DONE.name() : Msg.Error.name();
-        try {
-            conectionManager.sendMessage(new JsonResponse<Boolean>("", msg, answer));
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+
+        conectionManager.sendMessage(new JsonResponse<Boolean>("", msg, answer));
+
     }
 
     private void addMovie(JsonResponse<Movie> message) {
         message = conectionManager.convertData(message, Movie.class);
-        try {
-            boolean answer = cinemaManager.addMovie(message.getData());
-            // TODO mejorar msg
-            String msg = answer ? Msg.DONE.name() : Msg.Error.name();
-            conectionManager.sendMessage(new JsonResponse<Boolean>("", msg, answer));
-            System.out.println("Pelicula creada");
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+
+        boolean answer = cinemaManager.addMovie(message.getData());
+        // TODO mejorar msg
+        String msg = answer ? Msg.DONE.name() : Msg.Error.name();
+        conectionManager.sendMessage(new JsonResponse<Boolean>("", msg, answer));
+        System.out.println("Pelicula creada");
+
     }
 
 }

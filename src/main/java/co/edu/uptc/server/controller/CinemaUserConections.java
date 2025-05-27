@@ -67,23 +67,16 @@ public class CinemaUserConections extends Thread {
 
     private void selectSeat(JsonResponse<String[]> message) {
         String[] seat = message.getData();
-        try {
+
             conectionManager.sendMessage(new JsonResponse<Boolean>("", "Asiento ocupado",
                     cinemaManager.selectSeat(seat[0], seat[1], seat[2], seat[3], seat[4])));
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+     
     }
 
     private void getMovieSchedule() {
-        try {
+
             conectionManager.sendMessage(new JsonResponse<>("", "", cinemaManager.getActualSchedule()));
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            System.err.println(e.getMessage());
-        }
+  
 
     }
 

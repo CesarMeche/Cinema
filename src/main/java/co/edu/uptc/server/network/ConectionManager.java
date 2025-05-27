@@ -46,10 +46,15 @@ public class ConectionManager {
         }
     }
 
-    public void sendMessage(JsonResponse message) throws IOException {
+    public void sendMessage(JsonResponse message)  {
         String jsonMessage = gson.toJson(message);
-        dataOutput.writeUTF(jsonMessage);
-        dataOutput.flush();
+        try {
+            dataOutput.writeUTF(jsonMessage);
+            dataOutput.flush();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
     public <T> JsonResponse<T> receiveMessage(Class<T> clazz) throws IOException {
