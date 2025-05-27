@@ -2,6 +2,7 @@ package co.edu.uptc.server.controller;
 
 import co.edu.uptc.server.model.CinemaManager;
 import co.edu.uptc.server.network.ConectionManager;
+import co.edu.uptc.server.network.JsonResponse;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -11,7 +12,6 @@ public class Controller {
    CinemaManager cm;
    private ServerSocket serverSocket;
    private Socket socket;
-   private ConectionManager conectionManager;
    private int port;
 
    public Controller() {
@@ -31,9 +31,25 @@ public class Controller {
          while (true) {
             this.socket = serverSocket.accept();
             System.out.println("Client connected");
-            this.conectionManager = new ConectionManager(socket);
-            CinemaAdminConections threadClient= new CinemaAdminConections(conectionManager, cm);
-            threadClient.start();
+            ConectionManager conectionManager = new ConectionManager(socket);
+            JsonResponse status = conectionManager.receiveMessage();
+            System.out.println("");
+            switch (status.getMessage()) {
+               case "user":
+                  CinemaUserConections cinemaUserConections = new CinemaUserConections(conectionManager, cm);
+                  cinemaUserConections.start();
+                  System.out.println("User conectardo");
+                  break;
+               case "admin":
+                  CinemaAdminConections cinemaAdminConections = new CinemaAdminConections(conectionManager, cm);
+                  cinemaAdminConections.start();
+                  System.out.println("admin connected");
+                  break;
+               default:
+                  System.err.println("usuario no valido");
+                  break;
+            }
+
             System.out.println("Server started");
          }
       } catch (IOException e) {

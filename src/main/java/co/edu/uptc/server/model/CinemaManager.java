@@ -287,7 +287,7 @@ public class CinemaManager implements IModel {
         return false;
     }
 
-    @Override
+    // @Override
     public boolean configurateAuditorium(String data, String auditoriumName, String option) {
         Auditorium auditoriumn = searchAuditoriumByName(auditoriumName);
         if (auditoriumn != null) {

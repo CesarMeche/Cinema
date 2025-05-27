@@ -19,7 +19,8 @@ public class CinemaUserConections extends Thread {
 
     @Override
     public void run() {
-        while (true) {
+        boolean conected=true;
+        while (conected) {
 
             JsonResponse message;
             try {
@@ -46,29 +47,33 @@ public class CinemaUserConections extends Thread {
                     default:
                         System.out.println("Opción inválida");
                 }
-            } catch (
-
-            IOException e) {
-                e.printStackTrace();
-                System.out.println("Cliente desconectado");
+            } catch (IOException e) {
+                System.out.println("Cliente desconectado: " + e.getMessage());
+            } catch (IllegalArgumentException e) {
+                System.out.println("Opción desconocida recibida: " + e.getMessage());
+            } finally {
+                conectionManager.close();
+                System.out.println("Conexión finalizada con el cliente.");
+                conected=false;
 
             }
         }
     }
 
     private void selectSeat(JsonResponse<String[]> message) {
-        String[] seat= message.getData();
+        String[] seat = message.getData();
         try {
-          conectionManager.sendMessage(new JsonResponse<Boolean>("","Asiento ocupado",  cinemaManager.selectSeat(seat[0], seat[1], seat[2], seat[3], seat[4])));
-     } catch (IOException e) {
-         // TODO Auto-generated catch block
-       e.printStackTrace();
-  }
+            conectionManager.sendMessage(new JsonResponse<Boolean>("", "Asiento ocupado",
+                    cinemaManager.selectSeat(seat[0], seat[1], seat[2], seat[3], seat[4])));
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
     private void getMovieSchedule() {
         try {
-            conectionManager.sendMessage(new JsonResponse<>("","",cinemaManager.getActualSchedule()));
+            conectionManager.sendMessage(new JsonResponse<>("", "", cinemaManager.getActualSchedule()));
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
