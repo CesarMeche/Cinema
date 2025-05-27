@@ -8,6 +8,7 @@ import co.edu.uptc.server.network.JsonResponse;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.time.LocalDateTime;
 
 public class Controller {
@@ -32,8 +33,8 @@ public class Controller {
       //   cm.createScreening("papaya",LocalDateTime.now(),"papuh movie");
       //   cm.saveData();
       System.out.println("Server started");
+      while (true) {
       try {
-         while (true) {
             this.socket = serverSocket.accept();
             System.out.println("Client connected");
             ConectionManager conectionManager = new ConectionManager(socket);
@@ -56,10 +57,12 @@ public class Controller {
             }
 
             System.out.println("Server started");
+         } catch (SocketException e) {
+            System.err.println("Desconeccion subita"+socket.getLocalAddress());
+         } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
          }
-      } catch (IOException e) {
-
-         e.printStackTrace();
       }
 
    }

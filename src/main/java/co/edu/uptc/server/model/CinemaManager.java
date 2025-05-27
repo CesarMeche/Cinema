@@ -8,7 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 
 import co.edu.uptc.server.interfaces.IServer.IModel;
-
+import co.edu.uptc.server.model.enums.EditAudithorium;
+import co.edu.uptc.server.model.enums.EditMovie;
 import co.edu.uptc.server.model.pojos.Auditorium;
 import co.edu.uptc.server.model.pojos.Book;
 import co.edu.uptc.server.model.pojos.Movie;
@@ -178,25 +179,26 @@ public class CinemaManager implements IModel {
     }
 
     private void editMovie(String data, String atribute, Movie movie) {
-        switch (atribute) {
-            case "title":
-                movie.setTitle(data);
+        EditMovie editOption = EditMovie.valueOf(data);
+
+        switch (editOption) {
+            case TITLE:
+                movie.setTitle(atribute);
                 break;
-            case "calification":
-                movie.setCalification(data);
+            case CALIFICATION:
+                movie.setCalification(atribute);
                 break;
-            case "movieSynopsis":
-                movie.setMovieSynopsis(data);
+            case MOVIE_SYNOPSIS:
+                movie.setMovieSynopsis(atribute);
                 break;
-            case "rate":
-                movie.setRate(data);
+            case RATE:
+                movie.setRate(atribute);
                 break;
-            case "durationInMinutes":
-                movie.setDurationInMinutes(data);
+            case DURATION_IN_MINUTES:
+                movie.setDurationInMinutes(atribute);
                 break;
             default:
-                System.out.println("has esto we editMovie");
-                // TODO has esto we
+                System.out.println("Atributo no reconocido: " + editOption);
                 break;
         }
     }
@@ -241,7 +243,7 @@ public class CinemaManager implements IModel {
     private void findRigthShedule(Movie movie, LocalDateTime date, Auditorium auditoriumn) {
 
         Screening screening = new Screening(movie, date, auditoriumn);
-        //TODO validar si si es actual
+        // TODO validar si si es actual
         if (actualSchedule == null) {
             actualSchedule = new Schedule(findWeek(date), findWeek(date).plusDays(6));
         }
@@ -249,11 +251,11 @@ public class CinemaManager implements IModel {
             actualSchedule(movie.getTitle());
             actualSchedule.addScreening(movie.getTitle(), screening);
         } else {
-            Schedule schedule=new Schedule(findWeek(date), findWeek(date).plusDays(6));
+            Schedule schedule = new Schedule(findWeek(date), findWeek(date).plusDays(6));
             if (!schedule.getScreenings().containsKey(screening.getMovie().getTitle())) {
                 schedule.addMovie(screening.getMovie().getTitle());
             }
-            schedule.addScreening(screening.getMovie().getTitle(),screening);
+            schedule.addScreening(screening.getMovie().getTitle(), screening);
             futureSchedule.add(schedule);
 
         }
@@ -287,7 +289,7 @@ public class CinemaManager implements IModel {
             ArrayList<Screening> screenings = actualSchedule.getScreenings().get(moveiName);
             Screening screening = findScreening(screenings, date, AuditoriumName);
             screenings.remove(screening);
-
+            return true;
         }
         // TODO validacionmes deleteScreening
         return false;
@@ -295,14 +297,16 @@ public class CinemaManager implements IModel {
 
     // @Override
     public boolean configurateAuditorium(String data, String auditoriumName, String option) {
+        
         Auditorium auditoriumn = searchAuditoriumByName(auditoriumName);
+        EditAudithorium editOption=EditAudithorium.valueOf(option);
         if (auditoriumn != null) {
 
-            switch (option) {
-                case "name":
+            switch (editOption) {
+                case NAME:
                     auditoriumn.setName(data);
                     break;
-                case "size":
+                case SIZE:
                     editAuditorium(data, auditoriumn);
                     break;
                 default:
@@ -310,7 +314,8 @@ public class CinemaManager implements IModel {
                     break;
             }
             return true;
-        }{
+        }
+        {
             return false;
         }
     }

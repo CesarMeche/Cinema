@@ -2,6 +2,7 @@ package co.edu.uptc.server.controller;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 
 import co.edu.uptc.server.model.CinemaManager;
 import co.edu.uptc.server.model.enums.AdminOptions;
@@ -52,16 +53,16 @@ public class CinemaAdminConections extends Thread {
                 }
             } catch (IOException e) {
                 System.out.println("Cliente desconectado: " + e.getMessage());
+                conected = false;
             } catch (IllegalArgumentException e) {
                 System.out.println("Opción desconocida recibida: " + e.getMessage());
+                conected = false;
             }
             if (!conected)
 
             {
                 conectionManager.close();
-                System.out.println("Conexión finalizada con el cliente.");
-                conected = false;
-
+                System.out.println("Conexión finalizada con el cliente." + this.getName());
             }
         }
     }
@@ -80,45 +81,71 @@ public class CinemaAdminConections extends Thread {
     }
 
     private void configurateAuditorium(JsonResponse<String[]> message) {
-        boolean answer = cinemaManager.configurateAuditorium(message.getData()[0], message.getData()[1],
-                message.getData()[2]);
-        // TODO mejorar msg
-        String msg = answer ? Msg.DONE.name() : Msg.Error.name();
+        message = conectionManager.convertData(message, String[].class);
+        String[] data = message.getData();
+        try {
+
+            boolean answer = cinemaManager.configurateAuditorium(message.getData()[0], message.getData()[1],message.getData()[2]);
+            // TODO mejorar msg
+            conectionManager.sendMessage(new JsonResponse<Boolean>("", Msg.DONE.name(), answer));
+        } catch (DateTimeParseException e) {
+            // TODO: handle exception
+            conectionManager.sendMessage(new JsonResponse<Boolean>("", Msg.Error.name(), false));
+        }
         
-        conectionManager.sendMessage(new JsonResponse<Boolean>("", msg, answer));
 
     }
 
     private void deleteScreening(JsonResponse<String[]> message) {
-        boolean answer = cinemaManager.deleteScreening(message.getData()[0], LocalDateTime.parse(message.getData()[1]),
-                message.getData()[2]);
-        // TODO mejorar msg
-        String msg = answer ? Msg.DONE.name() : Msg.Error.name();
+        message = conectionManager.convertData(message, String[].class);
+        String[] data = message.getData();
+        try {
 
-        conectionManager.sendMessage(new JsonResponse<Boolean>("", msg, answer));
+            boolean answer = cinemaManager.deleteScreening(message.getData()[0],
+                    LocalDateTime.parse(message.getData()[1]),
+                    message.getData()[2]);
+            // TODO mejorar msg
+            conectionManager.sendMessage(new JsonResponse<Boolean>("", Msg.DONE.name(), answer));
+        } catch (DateTimeParseException e) {
+            // TODO: handle exception
+            conectionManager.sendMessage(new JsonResponse<Boolean>("", Msg.Error.name(), false));
+        }
+
 
     }
 
     private void createScreening(JsonResponse<String[]> message) {
         message = conectionManager.convertData(message, String[].class);
         String[] data = message.getData();
-        boolean answer = cinemaManager.createScreening(message.getData()[0], LocalDateTime.parse(message.getData()[1]),
-                message.getData()[2]);
-        // TODO mejorar msg
-        String msg = answer ? Msg.DONE.name() : Msg.Error.name();
+        try {
 
-        conectionManager.sendMessage(new JsonResponse<Boolean>("", msg, answer));
+            boolean answer = cinemaManager.createScreening(message.getData()[0],
+                    LocalDateTime.parse(message.getData()[1]),
+                    message.getData()[2]);
+            // TODO mejorar msg
+
+            conectionManager.sendMessage(new JsonResponse<Boolean>("", Msg.DONE.name(), answer));
+        } catch (DateTimeParseException e) {
+            System.err.println("formato de fecha incorrecto");
+            conectionManager.sendMessage(new JsonResponse<Boolean>("", Msg.Error.name(), false));
+        }
 
     }
 
     private void editMovieData(JsonResponse<String[]> message) {
-        // TODO mensaje de error con que quedo mal
-        boolean answer = cinemaManager.editMovieData(message.getData()[0], message.getData()[1], message.getData()[2]);
-        // TODO mejorar msg
-        String msg = answer ? Msg.DONE.name() : Msg.Error.name();
+        message = conectionManager.convertData(message, String[].class);
+        String[] data = message.getData();
+        try {
+            boolean answer = cinemaManager.editMovieData(message.getData()[0], message.getData()[1],
+                    message.getData()[2]);
+            // TODO mejorar msg
+            String msg = answer ? Msg.DONE.name() : Msg.Error.name();
 
-        conectionManager.sendMessage(new JsonResponse<Boolean>("", msg, answer));
-
+            conectionManager.sendMessage(new JsonResponse<Boolean>("", msg, answer));
+        } catch (DateTimeParseException e) {
+            System.err.println("formato de fecha incorrecto");
+            conectionManager.sendMessage(new JsonResponse<Boolean>("", Msg.Error.name(), false));
+        }
     }
 
     private void addMovie(JsonResponse<Movie> message) {
