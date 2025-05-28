@@ -1,7 +1,10 @@
 package co.edu.uptc.server.controller;
 
 import java.io.IOException;
+import java.time.format.DateTimeParseException;
+
 import co.edu.uptc.server.model.CinemaManager;
+import co.edu.uptc.server.model.enums.Msg;
 import co.edu.uptc.server.model.enums.UserOptions;
 import co.edu.uptc.server.network.ConectionManager;
 import co.edu.uptc.server.network.JsonResponse;
@@ -66,17 +69,23 @@ public class CinemaUserConections extends Thread {
     }
 
     private void selectSeat(JsonResponse<String[]> message) {
-        String[] seat = message.getData();
+        JsonResponse<String[]> msg = conectionManager.convertData(message, String[].class);
+        String[] seat = msg.getData();
+        try {
 
-            conectionManager.sendMessage(new JsonResponse<Boolean>("", "Asiento ocupado",
-                    cinemaManager.selectSeat(seat[0], seat[1], seat[2], seat[3], seat[4])));
-     
+            boolean answer = cinemaManager.selectSeat(seat[0], seat[1], seat[2], seat[3], seat[4]);
+            // TODO mejorar msg
+            conectionManager.sendMessage(new JsonResponse<Boolean>("", Msg.DONE.name(), answer));
+
+        } catch (Exception e) {
+            // TODO: handle exception
+            conectionManager.sendMessage(new JsonResponse<Boolean>("", Msg.Error.name(), false));
+        }
     }
 
     private void getMovieSchedule() {
 
-            conectionManager.sendMessage(new JsonResponse<>("", "", cinemaManager.getActualSchedule()));
-  
+        conectionManager.sendMessage(new JsonResponse<>("", "", cinemaManager.getActualSchedule()));
 
     }
 

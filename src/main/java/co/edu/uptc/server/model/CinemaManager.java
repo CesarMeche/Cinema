@@ -110,7 +110,8 @@ public class CinemaManager implements IModel {
         LocalDateTime date = LocalDateTime.parse(dateString);
         ArrayList<Screening> screenings = actualSchedule.getScreenings().get(movieName);
         Screening screening = findScreening(screenings, date, auditoriumName);
-        int rowNumber = Integer.parseInt(row);
+
+        int rowNumber =row.charAt(0)-64;
         int seatNumber = Integer.parseInt(seat);
         if (!screening.isocuped(rowNumber, seatNumber)) {
             screening.getScreeningAuditorium().getSeat()[rowNumber][seatNumber].setOcuped(true);
