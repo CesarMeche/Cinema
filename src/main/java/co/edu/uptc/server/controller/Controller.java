@@ -1,21 +1,24 @@
 package co.edu.uptc.server.controller;
 
 import co.edu.uptc.server.model.CinemaManager;
+import co.edu.uptc.server.model.pojos.Movie;
 import co.edu.uptc.server.network.ConectionManager;
+import co.edu.uptc.server.network.JsonResponse;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
+import java.time.LocalDateTime;
 
 public class Controller {
-   CinemaManager cm;
+   private CinemaManager cm;
    private ServerSocket serverSocket;
    private Socket socket;
-   private ConectionManager conectionManager;
    private int port;
 
    public Controller() {
-      this.port = 1234;
+      this.port = 1235;
       try {
          this.serverSocket = new ServerSocket(port);
       } catch (IOException e) {
@@ -26,19 +29,40 @@ public class Controller {
 
    public void initCinemaSystem() {
       cm = new CinemaManager();
+      //   cm.createScreening("papaya",LocalDateTime.now(),"mikus");
+      //   cm.createScreening("papaya",LocalDateTime.now(),"papuh movie");
+      //   cm.saveData();
       System.out.println("Server started");
+      while (true) {
       try {
-         while (true) {
             this.socket = serverSocket.accept();
             System.out.println("Client connected");
-            this.conectionManager = new ConectionManager(socket);
-            CinemaAdminConections threadClient= new CinemaAdminConections(conectionManager, cm);
-            threadClient.start();
-            System.out.println("Server started");
-         }
-      } catch (IOException e) {
+            ConectionManager conectionManager = new ConectionManager(socket);
+            JsonResponse status = conectionManager.receiveMessage(String.class);
+            System.out.println("");
+            switch (status.getMessage()) {
+               case "user":
+                  CinemaUserConections cinemaUserConections = new CinemaUserConections(conectionManager, cm);
+                  cinemaUserConections.start();
+                  System.out.println("User conectardo");
+                  break;
+               case "admin":
+                  CinemaAdminConections cinemaAdminConections = new CinemaAdminConections(conectionManager, cm);
+                  cinemaAdminConections.start();
+                  System.out.println("admin connected");
+                  break;
+               default:
+                  System.err.println("usuario no valido");
+                  break;
+            }
 
-         e.printStackTrace();
+            System.out.println("Server started");
+         } catch (SocketException e) {
+            System.err.println("Desconeccion subita"+socket.getLocalAddress());
+         } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+         }
       }
 
    }

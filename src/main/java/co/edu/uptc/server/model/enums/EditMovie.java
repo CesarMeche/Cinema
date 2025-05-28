@@ -1,6 +1,9 @@
 package co.edu.uptc.server.model.enums;
 
 public enum EditMovie {
-
-    title,calification,movieSynopsis,rate,durationInMinutes;
-} 
+    TITLE,
+    CALIFICATION,
+    MOVIE_SYNOPSIS,
+    RATE,
+    DURATION_IN_MINUTES;
+}

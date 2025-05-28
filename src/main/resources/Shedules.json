@@ -1,6 +1,6 @@
 [ {
-  "dateInit" : [ 2025, 5, 19, 0, 0 ],
-  "dateEnd" : [ 2025, 5, 25, 0, 0 ],
+  "dateInit" : [ 2025, 5, 26, 0, 0 ],
+  "dateEnd" : [ 2025, 6, 1, 0, 0 ],
   "screenings" : {
     "papuh movie" : [ {
       "movie" : {
@@ -10,7 +10,7 @@
         "durationInMinutes" : "10",
         "title" : "papuh movie"
       },
-      "date" : [ 2025, 5, 22, 3, 30 ],
+      "date" : [ 2025, 5, 27, 11, 10, 3, 928120600 ],
       "screeningAuditorium" : {
         "seat" : [ [ {
           "row" : "A",
@@ -416,15 +416,16 @@
         "name" : "papaya"
       },
       "done" : false
-    }, {
+    } ],
+    "mikus" : [ {
       "movie" : {
-        "calification" : "9",
-        "movieSynopsis" : "esta padre pq es la papuh movie",
-        "rate" : "12",
-        "durationInMinutes" : "10",
-        "title" : "papuh movie"
+        "calification" : "=10",
+        "movieSynopsis" : "popipopipo",
+        "rate" : "3+",
+        "durationInMinutes" : "88",
+        "title" : "mikus"
       },
-      "date" : [ 2025, 5, 22, 3, 30 ],
+      "date" : [ 2025, 5, 27, 11, 9, 36, 613078100 ],
       "screeningAuditorium" : {
         "seat" : [ [ {
           "row" : "A",
