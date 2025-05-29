@@ -1,17 +1,17 @@
 package co.edu.uptc.server.interfaces;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashMap;
 
 import co.edu.uptc.server.model.pojos.Movie;
 import co.edu.uptc.server.model.pojos.Screening;
+import co.edu.uptc.server.structures.avltree.AVLTree;
 
 
 public class IServer {
     public interface IModel {
         //client operations
-        public  HashMap<String, ArrayList<Screening>> getMovieSchedule( );
+        public  HashMap<String, AVLTree<Screening>> getMovieSchedule( );
         public boolean selectSeat(String moviename,String auditoriumName,String date,String row,String seat);
         public void createBook();
         public void checkBook();

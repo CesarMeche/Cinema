@@ -1,8 +1,6 @@
 package co.edu.uptc.server.controller;
 
 import java.io.IOException;
-import java.time.format.DateTimeParseException;
-
 import co.edu.uptc.server.model.CinemaManager;
 import co.edu.uptc.server.model.enums.Msg;
 import co.edu.uptc.server.model.enums.UserOptions;
@@ -20,6 +18,7 @@ public class CinemaUserConections extends Thread {
 
     }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     public void run() {
         boolean conected = true;
@@ -39,7 +38,6 @@ public class CinemaUserConections extends Thread {
                     case CREATE_BOOK:
                         break;
                     case CHECK_BOOK:
-
                         break;
                     case VALIDATE_BOOK:
 
@@ -74,11 +72,9 @@ public class CinemaUserConections extends Thread {
         try {
 
             boolean answer = cinemaManager.selectSeat(seat[0], seat[1], seat[2], seat[3], seat[4]);
-            // TODO mejorar msg
             conectionManager.sendMessage(new JsonResponse<Boolean>("", Msg.DONE.name(), answer));
 
         } catch (Exception e) {
-            // TODO: handle exception
             conectionManager.sendMessage(new JsonResponse<Boolean>("", Msg.Error.name(), false));
         }
     }

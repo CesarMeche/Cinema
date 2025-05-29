@@ -1,4 +1,4 @@
-[{
+[ {
   "seat" : [ [ {
     "row" : "A",
     "seatNumber" : 1,
@@ -401,4 +401,4 @@
     "ocuped" : false
   } ] ],
   "name" : "papaya"
-}]
+} ]

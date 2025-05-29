@@ -7,7 +7,6 @@ import java.time.format.DateTimeParseException;
 import co.edu.uptc.server.model.CinemaManager;
 import co.edu.uptc.server.model.enums.AdminOptions;
 import co.edu.uptc.server.model.enums.Msg;
-import co.edu.uptc.server.model.enums.UserOptions;
 import co.edu.uptc.server.model.pojos.Movie;
 import co.edu.uptc.server.network.ConectionManager;
 import co.edu.uptc.server.network.JsonResponse;
@@ -22,6 +21,7 @@ public class CinemaAdminConections extends Thread {
         this.cinemaManager = cinemaManager;
     }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     public void run() {
         boolean conected = true;
@@ -82,7 +82,6 @@ public class CinemaAdminConections extends Thread {
 
     private void configurateAuditorium(JsonResponse<String[]> message) {
         message = conectionManager.convertData(message, String[].class);
-        String[] data = message.getData();
         try {
 
             boolean answer = cinemaManager.configurateAuditorium(message.getData()[0], message.getData()[1],message.getData()[2]);
@@ -98,7 +97,6 @@ public class CinemaAdminConections extends Thread {
 
     private void deleteScreening(JsonResponse<String[]> message) {
         message = conectionManager.convertData(message, String[].class);
-        String[] data = message.getData();
         try {
 
             boolean answer = cinemaManager.deleteScreening(message.getData()[0],
@@ -116,7 +114,6 @@ public class CinemaAdminConections extends Thread {
 
     private void createScreening(JsonResponse<String[]> message) {
         message = conectionManager.convertData(message, String[].class);
-        String[] data = message.getData();
         try {
 
             boolean answer = cinemaManager.createScreening(message.getData()[0],
@@ -134,7 +131,6 @@ public class CinemaAdminConections extends Thread {
 
     private void editMovieData(JsonResponse<String[]> message) {
         message = conectionManager.convertData(message, String[].class);
-        String[] data = message.getData();
         try {
             boolean answer = cinemaManager.editMovieData(message.getData()[0], message.getData()[1],
                     message.getData()[2]);

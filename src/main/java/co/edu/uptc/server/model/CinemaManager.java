@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 import co.edu.uptc.server.interfaces.IServer.IModel;
@@ -18,6 +19,7 @@ import co.edu.uptc.server.model.pojos.Screening;
 import co.edu.uptc.server.model.pojos.Seat;
 import co.edu.uptc.server.persistence.FileManager;
 import co.edu.uptc.server.structures.MyQueueu;
+import co.edu.uptc.server.structures.avltree.AVLTree;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -101,17 +103,17 @@ public class CinemaManager implements IModel {
 
     // user operations
     @Override
-    public HashMap<String, ArrayList<Screening>> getMovieSchedule() {
+    public HashMap<String, AVLTree<Screening>> getMovieSchedule() {
         return actualSchedule.getScreenings();
     }
 
     @Override
     public boolean selectSeat(String movieName, String auditoriumName, String dateString, String row, String seat) {
         LocalDateTime date = LocalDateTime.parse(dateString);
-        ArrayList<Screening> screenings = actualSchedule.getScreenings().get(movieName);
+        AVLTree<Screening> screenings = actualSchedule.getScreenings().get(movieName);
         Screening screening = findScreening(screenings, date, auditoriumName);
 
-        int rowNumber =row.charAt(0)-64;
+        int rowNumber = row.charAt(0) - 64;
         int seatNumber = Integer.parseInt(seat);
         if (!screening.isocuped(rowNumber, seatNumber)) {
             screening.getScreeningAuditorium().getSeat()[rowNumber][seatNumber].setOcuped(true);
@@ -123,20 +125,16 @@ public class CinemaManager implements IModel {
 
     }
 
-    private Screening findScreening(ArrayList<Screening> screenings, LocalDateTime date, String auditoriumName) {
-        int i = 0;
-        Screening screening = null;
-        while (i < screenings.size()) {
-            screening = screenings.get(i);
+    private Screening findScreening(AVLTree<Screening> screenings, LocalDateTime date, String auditoriumName) {
+        Iterator<Screening> it = screenings.getInOrder().iterator();
+        while (it.hasNext()) {
+            Screening screening = it.next();
             if (screening.getScreeningAuditorium().equals(searchAuditoriumByName(auditoriumName))
                     && screening.getDate().equals(date)) {
-
-                break;
+                return screening;
             }
-
-            i++;
         }
-        return screening;
+        return null;
     }
 
     @Override
@@ -212,7 +210,7 @@ public class CinemaManager implements IModel {
             }
         }
         System.out.println("has esto we searchMovieByName");
-        // TODO has esto we
+        // TODO has la clase de excepcion
         return null;
     }
 
@@ -282,25 +280,41 @@ public class CinemaManager implements IModel {
     }
 
     @Override
-    public boolean deleteScreening(String AuditoriumName, LocalDateTime date, String moveiName) {
-        // TODO preguntar al ticher si queda tiempo
-        // TODO combair el orden de los parametros pq sdjka
+    public boolean deleteScreening(String AuditoriumName, LocalDateTime date, String movieName) {
+        try {
+            if (date.isBefore(actualSchedule.getDateEnd())) {
+                AVLTree<Screening> screenings = actualSchedule.getScreenings().get(movieName);
 
-        if (date.isBefore(actualSchedule.getDateEnd())) {
-            ArrayList<Screening> screenings = actualSchedule.getScreenings().get(moveiName);
-            Screening screening = findScreening(screenings, date, AuditoriumName);
-            screenings.remove(screening);
-            return true;
+                if (screenings == null) {
+                    System.out.println("No hay screenings para la película: " + movieName);
+                    return false;
+                }
+
+                Screening screening = findScreening(screenings, date, AuditoriumName);
+
+                if (screening == null) {
+                    System.out.println("No se encontró la función con esos parámetros.");
+                    return false;
+                }
+
+                screenings.remove(screening);
+                return true;
+            }
+        } catch (NullPointerException e) {
+            System.err.println("Error: Se intentó acceder a un objeto nulo al eliminar screening.");
+            e.printStackTrace();
+        } catch (Exception e) {
+            System.err.println("Error inesperado al eliminar screening:");
+            e.printStackTrace();
         }
-        // TODO validacionmes deleteScreening
         return false;
     }
 
     // @Override
     public boolean configurateAuditorium(String data, String auditoriumName, String option) {
-        
+
         Auditorium auditoriumn = searchAuditoriumByName(auditoriumName);
-        EditAudithorium editOption=EditAudithorium.valueOf(option);
+        EditAudithorium editOption = EditAudithorium.valueOf(option);
         if (auditoriumn != null) {
 
             switch (editOption) {
@@ -352,8 +366,8 @@ public class CinemaManager implements IModel {
     private int ocupedSeatsFromASchedule(Schedule schedule, LocalDateTime first, LocalDateTime second) {
         int sells = 0;
         if (isbetween(first, schedule.getDateInit(), second)) {
-            for (ArrayList<Screening> screenings : schedule.getScreenings().values()) {
-                for (Screening screening : screenings) {
+            for (AVLTree<Screening> screenings : schedule.getScreenings().values()) {
+                for (Screening screening : screenings.getInOrder()) {
                     sells += ocupedSeats(screening.getScreeningAuditorium());
                 }
             }

@@ -10,6 +10,9 @@ public class AvlNode<T> {
 	private AvlNode<T> rightNode;
 	protected int fe;
 
+	public AvlNode() {
+	}
+
 	public AvlNode(T date) {
 		leftNode = null;
 		this.data = date;

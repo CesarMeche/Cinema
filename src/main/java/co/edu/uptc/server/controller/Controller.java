@@ -1,7 +1,6 @@
 package co.edu.uptc.server.controller;
 
 import co.edu.uptc.server.model.CinemaManager;
-import co.edu.uptc.server.model.pojos.Movie;
 import co.edu.uptc.server.network.ConectionManager;
 import co.edu.uptc.server.network.JsonResponse;
 
@@ -9,7 +8,6 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-import java.time.LocalDateTime;
 
 public class Controller {
    private CinemaManager cm;
@@ -27,11 +25,13 @@ public class Controller {
       }
    }
 
+   @SuppressWarnings("rawtypes")
    public void initCinemaSystem() {
       cm = new CinemaManager();
-      //   cm.createScreening("papaya",LocalDateTime.now(),"mikus");
-      //   cm.createScreening("papaya",LocalDateTime.now(),"papuh movie");
-      //   cm.saveData();
+      // cm.setActualSchedule(new Schedule(LocalDateTime.of( 2025, 5, 26, 0, 0 ), LocalDateTime.of( 2025, 6, 1, 0, 0  )));
+      //    cm.createScreening("papaya",LocalDateTime.now(),"mikus");
+      // cm.createScreening("papaya",LocalDateTime.now(),"papuh movie");
+        cm.saveData();
       System.out.println("Server started");
       while (true) {
       try {
@@ -60,7 +60,6 @@ public class Controller {
          } catch (SocketException e) {
             System.err.println("Desconeccion subita"+socket.getLocalAddress());
          } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
          }
       }
