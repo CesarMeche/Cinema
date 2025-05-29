@@ -3,6 +3,7 @@ package co.edu.uptc.server.interfaces;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 
+import co.edu.uptc.server.model.pojos.Book;
 import co.edu.uptc.server.model.pojos.Movie;
 import co.edu.uptc.server.model.pojos.Screening;
 import co.edu.uptc.server.structures.avltree.AVLTree;
@@ -13,10 +14,10 @@ public class IServer {
         //client operations
         public  HashMap<String, AVLTree<Screening>> getMovieSchedule( );
         public boolean selectSeat(String moviename,String auditoriumName,String date,String row,String seat);
-        public void createBook();
-        public void checkBook();
-        public void validateBook();
-        public void cancelBook();
+        public void createBook(String movie, String auditorium, String dateStr, String row, String seat);
+        public Book checkBook(String bookId);
+        public boolean validateBook(String bookId);
+        public boolean cancelBook(String bookId);
         //admin operations
         public boolean addMovie(Movie newmovie);
         public boolean editMovieData(String data,String atribute,String movieName);

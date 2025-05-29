@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.time.LocalDateTime;
 
 public class Controller {
    private CinemaManager cm;
@@ -28,9 +29,8 @@ public class Controller {
    @SuppressWarnings("rawtypes")
    public void initCinemaSystem() {
       cm = new CinemaManager();
-      // cm.setActualSchedule(new Schedule(LocalDateTime.of( 2025, 5, 26, 0, 0 ), LocalDateTime.of( 2025, 6, 1, 0, 0  )));
-      //    cm.createScreening("papaya",LocalDateTime.now(),"mikus");
-      // cm.createScreening("papaya",LocalDateTime.now(),"papuh movie");
+      System.out.println("cine started");
+      
         cm.saveData();
       System.out.println("Server started");
       while (true) {

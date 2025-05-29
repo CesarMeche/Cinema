@@ -3,6 +3,7 @@ package co.edu.uptc.server.model;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.util.Set;
+import java.util.UUID;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -49,10 +50,8 @@ public class CinemaManager implements IModel {
         loadMovies((List<Movie>) data.get(0));
         loadAuditoriums((List<Auditorium>) data.get(1));
         loadSchedules(data.get(2));
-        /*
-         * TODO ver que pedo los books
-         * //loadBooks(data.get(3));
-         */
+        loadBooks(data.get(3));
+
     }
 
     private void loadAuditoriums(List<Auditorium> auditoriums) {
@@ -94,10 +93,9 @@ public class CinemaManager implements IModel {
         schedule.addAll(futureSchedule);
         schedule.addAll(previusSchedules);
         data.add(schedule);
-        /*
-         * TODO ver que pedo los books
-         * data.add(booksqQueueu);
-         */
+
+        data.add(booksqQueueu.toList());
+
         fm.saveData(data);
     }
 
@@ -129,33 +127,77 @@ public class CinemaManager implements IModel {
         Iterator<Screening> it = screenings.getInOrder().iterator();
         while (it.hasNext()) {
             Screening screening = it.next();
-            if (screening.getScreeningAuditorium().equals(searchAuditoriumByName(auditoriumName))
-                    && screening.getDate().equals(date)) {
+            if (screening.getScreeningAuditorium().getName().equals(auditoriumName)
+                    && findDate(screening.getDate(), date)) {
                 return screening;
+            }
+        }
+        return null;
+    }
+    private boolean findDate(LocalDateTime date, LocalDateTime screeningDate) {
+    if (date == null || screeningDate == null) {
+        return false;
+    }
+    // Ignorar segundos y nanos comparando año, mes, día, hora y minuto
+    return date.getYear() == screeningDate.getYear() &&
+           date.getMonth() == screeningDate.getMonth() &&
+           date.getDayOfMonth() == screeningDate.getDayOfMonth() &&
+           date.getHour() == screeningDate.getHour() &&
+           date.getMinute() == screeningDate.getMinute();
+}
+
+
+    @Override
+    public void createBook(String movie, String auditorium, String dateStr, String row, String seat) {
+        LocalDateTime date = LocalDateTime.parse(dateStr);
+        if (selectSeat(movie, auditorium, dateStr, row, seat)) {
+            Book book = new Book();
+            //TODO manejar esto ssdsdx
+            book.setId("pala");
+            book.setMovieTitle(movie);
+            book.setAuditoriumName(auditorium);
+            book.setDate(date);
+            book.setSeatRow(row);
+            book.setSeatNumber(Integer.parseInt(seat));
+            book.setValidated(false);
+            booksqQueueu.push(book);
+        } else {
+            throw new RuntimeException("El asiento ya está ocupado");
+        }
+    }
+
+    @Override
+    public Book checkBook(String bookId) {
+        for (Book book : booksqQueueu) {
+            if (book.getId().equals(bookId)) {
+                return book;
             }
         }
         return null;
     }
 
     @Override
-    public void createBook() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'createBook'");
+    public boolean validateBook(String bookId) {
+        for (Book book : booksqQueueu) {
+            if (book.getId().equals(bookId)) {
+                book.setValidated(true);
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
-    public void checkBook() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'checkBook'");
-    }
-
-    @Override
-    public void validateBook() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'validateBook'");
-    }
-
-    public void cancelBook() {
+    public boolean cancelBook(String bookId) {
+        Iterator<Book> it = booksqQueueu.iterator();
+        while (it.hasNext()) {
+            Book book = it.next();
+            if (book.getId().equals(bookId)) {
+                it.remove(); // Quita del sistema
+                return true;
+            }
+        }
+        return false;
     }
 
     // admin operations

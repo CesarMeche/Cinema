@@ -490,7 +490,7 @@
         }, {
           "row" : "B",
           "seatNumber" : 6,
-          "ocuped" : false
+          "ocuped" : true
         }, {
           "row" : "B",
           "seatNumber" : 7,

@@ -13,6 +13,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import co.edu.uptc.server.model.pojos.Auditorium;
 import co.edu.uptc.server.model.pojos.Movie;
 import co.edu.uptc.server.model.pojos.Schedule;
+import co.edu.uptc.server.model.pojos.Book;
 import co.edu.uptc.server.structures.avltree.*;;
 
 public class FileManager {
@@ -44,7 +45,7 @@ public class FileManager {
 		}));
 		data.add(read(schedulesFile, new TypeReference<List<Schedule>>() {
 		}));
-		// data.add(read(booksFile, new TypeReference<List<Book>>() {}));
+		 data.add(read(booksFile, new TypeReference<List<Book>>() {}));
 		return data;
 	}
 
@@ -52,7 +53,7 @@ public class FileManager {
 		write(data.get(0), moviesFile);
 		write(data.get(1), auditoriumsFile);
 		write(data.get(2), schedulesFile);
-		// write(data.get(3), booksFile);
+		 write(data.get(3), booksFile);
 	}
 
 	public <T> void write(List<T> list, File file) {
