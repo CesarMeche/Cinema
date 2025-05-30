@@ -15,16 +15,22 @@ public class CinemaAdminConections extends Thread {
     private ConectionManager conectionManager;
     private CinemaManager cinemaManager;
     private AdminOptions adminOption;
+    private Controller controller;
+    private boolean conected;
 
-    public CinemaAdminConections(ConectionManager conectionManager, CinemaManager cinemaManager) {
+    public CinemaAdminConections(ConectionManager conectionManager, CinemaManager cinemaManager,
+            Controller controller) {
+        this.controller = controller;
         this.conectionManager = conectionManager;
         this.cinemaManager = cinemaManager;
+         conected = true;
+
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     public void run() {
-        boolean conected = true;
+
         while (conected) {
             try {
                 JsonResponse message = conectionManager.receiveMessage();
@@ -47,6 +53,9 @@ public class CinemaAdminConections extends Thread {
                         break;
                     case GENERATE_REPORT:
                         generateReport(message);
+                        break;
+                    case CLOSE:
+                        closeServer();
                         break;
                     default:
                         System.out.println("Opción inválida");
@@ -79,12 +88,12 @@ public class CinemaAdminConections extends Thread {
     private void configurateAuditorium(JsonResponse<String[]> message) {
         message = conectionManager.convertData(message, String[].class);
         try {
-            boolean answer = cinemaManager.configurateAuditorium(message.getData()[0], message.getData()[1],message.getData()[2]);
+            boolean answer = cinemaManager.configurateAuditorium(message.getData()[0], message.getData()[1],
+                    message.getData()[2]);
             conectionManager.sendMessage(new JsonResponse<Boolean>("", Msg.DONE.name(), answer));
         } catch (DateTimeParseException e) {
             conectionManager.sendMessage(new JsonResponse<Boolean>("", Msg.Error.name(), false));
         }
-        
 
     }
 
@@ -99,7 +108,6 @@ public class CinemaAdminConections extends Thread {
         } catch (DateTimeParseException e) {
             conectionManager.sendMessage(new JsonResponse<Boolean>("", Msg.Error.name(), false));
         }
-
 
     }
 
@@ -137,6 +145,11 @@ public class CinemaAdminConections extends Thread {
         conectionManager.sendMessage(new JsonResponse<Boolean>("", msg, answer));
         System.out.println("Pelicula creada");
 
+    }
+
+    private void closeServer() {
+        controller.stopServer();
+        conected=false;
     }
 
 }
