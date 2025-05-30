@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import co.edu.uptc.server.interfaces.IServer.IModel;
 import co.edu.uptc.server.model.enums.AudithoriumSize;
@@ -286,239 +287,244 @@ public class CinemaManager implements IModel {
     }
 
     @Override
-    public boolean editMovieData(String data, String atribute, String movieName) {
-        Movie movie = searchMovieByName(movieName);
-        if (movie != null) {
-            editMovie(data, atribute, movie);
+    public boolean editMovieData(String data, String attribute, String movieName) {
+        try {
+            Movie movie = searchMovieByName(movieName);
+            editMovie(data, attribute, movie);
             return true;
-        } else {
+        } catch (NoSuchElementException e) {
+            System.err.println(e.getMessage());
+            return false;
+        } catch (IllegalArgumentException e) {
+            System.err.println("Invalid attribute option: " + data);
             return false;
         }
-
     }
 
-    private void editMovie(String data, String atribute, Movie movie) {
-        EditMovie editOption = EditMovie.valueOf(data);
-
+    private void editMovie(String data, String attribute, Movie movie) {
+        EditMovie editOption = EditMovie.valueOf(data.toUpperCase());
         switch (editOption) {
             case TITLE:
-                movie.setTitle(atribute);
+                movie.setTitle(attribute);
                 break;
             case CALIFICATION:
-                movie.setCalification(atribute);
+                movie.setCalification(attribute);
                 break;
             case MOVIE_SYNOPSIS:
-                movie.setMovieSynopsis(atribute);
+                movie.setMovieSynopsis(attribute);
                 break;
             case RATE:
-                movie.setRate(atribute);
+                movie.setRate(attribute);
                 break;
             case DURATION_IN_MINUTES:
-                movie.setDurationInMinutes(atribute);
+                movie.setDurationInMinutes(attribute);
                 break;
             default:
-                System.out.println("Atributo no reconocido: " + editOption);
+                System.err.println("Unknown attribute: " + editOption);
                 break;
         }
     }
 
     private Movie searchMovieByName(String movieName) {
-
         for (Movie movie : moviesList) {
             if (movie.getTitle().equals(movieName)) {
                 return movie;
             }
         }
-        System.out.println("has esto we searchMovieByName");
-        // TODO has la clase de excepcion
-        return null;
+        throw new NoSuchElementException("Movie not found: " + movieName);
     }
 
     private Auditorium searchAuditoriumByName(String auditoriumName) {
-
         for (Auditorium auditorium : auditoriumsList) {
             if (auditorium.getName().equals(auditoriumName)) {
                 return auditorium;
             }
         }
-        System.out.println("has esto we searchAuditoriumByName");
-        // TODO has esto we
-        return null;
+        throw new NoSuchElementException("Auditorium not found: " + auditoriumName);
     }
 
     @Override
     public boolean createScreening(String auditoriumName, LocalDateTime date, String movieName) {
         Movie movie = searchMovieByName(movieName);
-        if (movie != null) {
-
-            Auditorium auditoriumn = searchAuditoriumByName(auditoriumName);
-            findRigthShedule(movie, date, auditoriumn);
-            // TODO validacionmes createScreening
-            return true;
-        }
-        return false;
-    }
-
-    private void findRigthShedule(Movie movie, LocalDateTime date, Auditorium auditoriumn) {
-
-        Screening screening = new Screening(movie, date, auditoriumn);
-        // TODO validar si si es actual
-        if (actualSchedule == null) {
-            actualSchedule = new Schedule(findWeek(date), findWeek(date).plusDays(6));
-        }
-        if (isBetween(actualSchedule.getDateInit(), date, actualSchedule.getDateEnd())) {
-            actualSchedule(movie.getTitle());
-            actualSchedule.addScreening(movie.getTitle(), screening);
-        } else {
-            Schedule schedule = new Schedule(findWeek(date), findWeek(date).plusDays(6));
-            if (!schedule.getScreenings().containsKey(screening.getMovie().getTitle())) {
-                schedule.addMovie(screening.getMovie().getTitle());
-            }
-            schedule.addScreening(screening.getMovie().getTitle(), screening);
+        if (movie == null) {
+            return false;
         }
 
+        Auditorium auditorium = searchAuditoriumByName(auditoriumName);
+        addScreeningToSchedule(movie, date, auditorium);
+        return true;
     }
 
-    private LocalDateTime findWeek(LocalDateTime date) {
-        int day = date.getDayOfWeek().compareTo(DayOfWeek.MONDAY);
-        date = date.minusDays(day);
-        return LocalDateTime.of(date.getYear(), date.getMonth(), date.getDayOfMonth(), 0, 0, 0);
-    }
+    private void addScreeningToSchedule(Movie movie, LocalDateTime date, Auditorium auditorium) {
+        Screening screening = new Screening(movie, date, auditorium);
 
-    private void actualSchedule(String title) {
-        Set<String> titles = actualSchedule.getScreenings().keySet();
-        if (!titles.contains(title)) {
-            actualSchedule.addMovie(title);
+        if (actualSchedule == null || !isDateWithinSchedule(date, actualSchedule)) {
+            actualSchedule = createNewScheduleForDate(date);
         }
+
+        addScreeningToActualSchedule(screening);
     }
 
-    private boolean isBetween(LocalDateTime first, LocalDateTime middle, LocalDateTime second) {
-        return middle.isAfter(first) & middle.isBefore(second) || middle.getDayOfWeek() == DayOfWeek.MONDAY
-                || middle.getDayOfWeek() == DayOfWeek.FRIDAY;
+    private boolean isDateWithinSchedule(LocalDateTime date, Schedule schedule) {
+        return !date.isBefore(schedule.getDateInit()) && !date.isAfter(schedule.getDateEnd());
+    }
+
+    private Schedule createNewScheduleForDate(LocalDateTime date) {
+        LocalDateTime weekStart = getWeekStart(date);
+        LocalDateTime weekEnd = weekStart.plusDays(6);
+        return new Schedule(weekStart, weekEnd);
+    }
+
+    private LocalDateTime getWeekStart(LocalDateTime date) {
+        // Ajusta la fecha al lunes de esa semana a la medianoche
+        int daysFromMonday = date.getDayOfWeek().getValue() - DayOfWeek.MONDAY.getValue();
+        return date.minusDays(daysFromMonday).withHour(0).withMinute(0).withSecond(0).withNano(0);
+    }
+
+    private void addScreeningToActualSchedule(Screening screening) {
+        String movieTitle = screening.getMovie().getTitle();
+        if (!actualSchedule.getScreenings().containsKey(movieTitle)) {
+            actualSchedule.addMovie(movieTitle);
+        }
+        actualSchedule.addScreening(movieTitle, screening);
     }
 
     @Override
-    public boolean deleteScreening(String AuditoriumName, LocalDateTime date, String movieName) {
+    public boolean deleteScreening(String auditoriumName, LocalDateTime date, String movieName) {
+        if (!isValidSchedule()) {
+            System.err.println("No hay un horario actual definido.");
+            return false;
+        }
+
+        if (!isDateInScheduleRange(date)) {
+            System.out.println("La fecha está fuera del rango del horario actual.");
+            return false;
+        }
+
+        AVLTree<Screening> screenings = getScreeningsByMovie(movieName);
+        if (screenings == null) {
+            System.out.println("No hay screenings para la película: " + movieName);
+            return false;
+        }
+
+        Screening screening = findScreening(screenings, date, auditoriumName);
+        if (screening == null) {
+            System.out.println("No se encontró la función con esos parámetros.");
+            return false;
+        }
+
+        return removeScreening(screenings, screening);
+    }
+
+    private boolean isValidSchedule() {
+        return actualSchedule != null;
+    }
+
+    private boolean isDateInScheduleRange(LocalDateTime date) {
+        return !date.isAfter(actualSchedule.getDateEnd());
+    }
+
+    private AVLTree<Screening> getScreeningsByMovie(String movieName) {
+        return actualSchedule.getScreenings().get(movieName);
+    }
+
+    private boolean removeScreening(AVLTree<Screening> screenings, Screening screening) {
         try {
-            if (date.isBefore(actualSchedule.getDateEnd())) {
-                AVLTree<Screening> screenings = actualSchedule.getScreenings().get(movieName);
-
-                if (screenings == null) {
-                    System.out.println("No hay screenings para la película: " + movieName);
-                    return false;
-                }
-
-                Screening screening = findScreening(screenings, date, AuditoriumName);
-
-                if (screening == null) {
-                    System.out.println("No se encontró la función con esos parámetros.");
-                    return false;
-                }
-
-                screenings.remove(screening);
-                return true;
-            }
-        } catch (NullPointerException e) {
-            System.err.println("Error: Se intentó acceder a un objeto nulo al eliminar screening.");
-            e.printStackTrace();
+            screenings.remove(screening);
+            return true;
         } catch (Exception e) {
             System.err.println("Error inesperado al eliminar screening:");
             e.printStackTrace();
+            return false;
         }
-        return false;
     }
 
     // @Override
-    public boolean configurateAuditorium(String data, String auditoriumName, String option) {
+public boolean configurateAuditorium(String data, String auditoriumName, String option) {
+    Auditorium auditorium = searchAuditoriumByName(auditoriumName);
+    if (auditorium == null) return false;
 
-        Auditorium auditoriumn = searchAuditoriumByName(auditoriumName);
-        EditAudithorium editOption = EditAudithorium.valueOf(option);
-        if (auditoriumn != null) {
-            switch (editOption) {
-                case NAME:
-                    actualizeData(auditoriumName, data);
-                    auditoriumn.setName(data);
-                    break;
-                case SIZE:
-                    editAuditorium(data, auditoriumn);
-                    break;
-                default:
-                    // TODO HAS ESTO configurateAuditorium
-                    break;
+    EditAudithorium editOption;
+    try {
+        editOption = EditAudithorium.valueOf(option.toUpperCase());
+    } catch (IllegalArgumentException e) {
+        System.err.println("Opción inválida para configurar auditorio: " + option);
+        return false;
+    }
+
+    switch (editOption) {
+        case NAME:
+            updateAuditoriumName(auditoriumName, data, auditorium);
+            break;
+        case SIZE:
+            if (!updateAuditoriumSize(data, auditorium)) {
+                return false;
             }
-            return true;
-        }
-        {
+            break;
+        default:
+            System.err.println("Opción no reconocida en configurateAuditorium");
             return false;
+    }
+    return true;
+}
+
+private void updateAuditoriumName(String oldName, String newName, Auditorium auditorium) {
+    updateNameInBooks(oldName, newName);
+    updateNameInSchedules(oldName, newName, actualSchedule);
+    updateNameInPreviousSchedules(oldName, newName);
+    auditorium.setName(newName);
+}
+
+private void updateNameInBooks(String oldName, String newName) {
+    for (Book book : booksqQueueu.toList()) {
+        if (book.getAuditoriumName().equals(oldName)) {
+            book.setAuditoriumName(newName);
         }
     }
+}
 
-    private void actualizeData(String auditoriumName, String data) {
-        actualizeDataFromQueue(auditoriumName, data);
-        actualizeDataFromSchedule(auditoriumName, data, actualSchedule);
-        actualizeDataFromList(auditoriumName, data, previusSchedules);
+private void updateNameInPreviousSchedules(String oldName, String newName) {
+    for (Schedule schedule : previusSchedules) {
+        updateNameInSchedules(oldName, newName, schedule);
     }
+}
 
-    private void actualizeDataFromQueue(String auditoriumName, String data) {
-        for (Book book : booksqQueueu.toList()) {
-            if (book.getAuditoriumName().equals(auditoriumName)) {
-                book.setAuditoriumName(data);
+private void updateNameInSchedules(String oldName, String newName, Schedule schedule) {
+    for (AVLTree<Screening> screeningTree : schedule.getScreenings().values()) {
+        for (Screening screening : screeningTree.getInOrder()) {
+            if (screening.getScreeningAuditorium().getName().equals(oldName)) {
+                screening.getScreeningAuditorium().setName(newName);
             }
         }
     }
+}
 
-    private void actualizeDataFromList(String auditoriumName, String data, ArrayList<Schedule> schedules) {
-        for (Schedule schedule : schedules) {
-            actualizeDataFromSchedule(auditoriumName, data, schedule);
-        }
+private boolean updateAuditoriumSize(String sizeStr, Auditorium auditorium) {
+    AudithoriumSize sizeEnum;
+    try {
+        sizeEnum = AudithoriumSize.valueOf(sizeStr.toUpperCase());
+    } catch (IllegalArgumentException e) {
+        System.err.println("Tamaño de auditorio no válido. Usa: SMALL, MEDIUM o BIG.");
+        return false;
     }
 
-    private void actualizeDataFromSchedule(String auditoriumName, String data, Schedule schedule) {
-        for (AVLTree<Screening> screeningTree : schedule.getScreenings().values()) {
-            for (Screening screening : screeningTree.getInOrder()) {
-                if (screening.getScreeningAuditorium().getName().equals(auditoriumName)) {
-                    screening.getScreeningAuditorium().setName(data);
-                }
-            }
-        }
-    }
+    int size = switch (sizeEnum) {
+        case SMALL -> 4;
+        case MEDIUM -> 7;
+        case BIG -> 10;
+    };
 
-    private boolean editAuditorium(String data, Auditorium auditorium) {
-        // Validar que el valor de "data" sea uno de los tamaños predefinidos
-        AudithoriumSize sizeEnum;
-        try {
-            sizeEnum = AudithoriumSize.valueOf(data.toUpperCase());
-        } catch (Exception e) {
-            System.err.println(
+    Auditorium updatedAuditorium = new Auditorium(auditorium.getName(), size, size);
 
-                    "Tamaño de auditorio no válido. Usa: SMALL, MEDIUM o BIG.");
-            return false;
-        }
-
-        int size;
-        switch (sizeEnum) {
-            case SMALL:
-                size = 4;
-                break;
-            case MEDIUM:
-                size = 7;
-                break;
-            case BIG:
-                size = 10;
-                break;
-            default:
-                throw new RuntimeException("Error inesperado al asignar tamaño.");
-        }
-
-        // Creamos el nuevo auditorio con el tamaño correcto y el mismo nombre
-        Auditorium updatedAuditorium = new Auditorium(auditorium.getName(), size, size);
-
-        // Actualizamos la lista principal
-        int index = auditoriumsList.indexOf(auditorium);
+    int index = auditoriumsList.indexOf(auditorium);
+    if (index >= 0) {
         auditoriumsList.set(index, updatedAuditorium);
-
         return true;
+    } else {
+        System.err.println("Auditorio no encontrado en la lista para actualizar tamaño.");
+        return false;
     }
+}
 
     @Override
     public int generateReport(LocalDateTime first, LocalDateTime second) {
@@ -558,6 +564,11 @@ public class CinemaManager implements IModel {
         }
 
         return occupiedSeats;
+    }
+
+    private boolean isBetween(LocalDateTime first, LocalDateTime middle, LocalDateTime second) {
+        return middle.isAfter(first) & middle.isBefore(second) || middle.getDayOfWeek() == DayOfWeek.MONDAY
+                || middle.getDayOfWeek() == DayOfWeek.FRIDAY;
     }
 
     // Método para contar asientos ocupados en un auditorio
