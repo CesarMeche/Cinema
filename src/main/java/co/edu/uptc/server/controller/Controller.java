@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-import java.time.LocalDateTime;
 
 public class Controller {
    private CinemaManager cm;
@@ -27,15 +26,13 @@ public class Controller {
       }
    }
 
-   @SuppressWarnings("rawtypes")
    public void initCinemaSystem() {
       cm = new CinemaManager();
-       //cm.createBook("mikus","papaya",LocalDateTime.of(2025, 5, 28, 13, 50, 1).toString(),"A","6","user");
-        
-       cm.saveData();
-      System.out.println("cine started");
-
       System.out.println("Server started");
+      initAceptThread();
+   }
+
+   private void initAceptThread() {
       while (true) {
          try {
             this.socket = serverSocket.accept();
@@ -43,34 +40,49 @@ public class Controller {
             ConectionManager conectionManager = new ConectionManager(socket);
             JsonResponse<String> status = conectionManager.receiveMessage(String.class);
             System.out.println("");
-            switch (status.getMessage()) {
-               case "user":
-                  CinemaUserConections cinemaUserConections = new CinemaUserConections(conectionManager, cm,
-                        status.getData());
-                  cinemaUserConections.start();
-                  System.out.println("User conectardo");
-                  conectionManager.sendMessage(new JsonResponse<>(Msg.Error.name(),Msg.DONE.name(),"usuario valido"));
-                  break;
-               case "admin":
-                  CinemaAdminConections cinemaAdminConections = new CinemaAdminConections(conectionManager, cm);
-                  cinemaAdminConections.start();
-                  conectionManager.sendMessage(new JsonResponse<>(Msg.Error.name(),Msg.DONE.name(),"usuario valido"));
-                  System.out.println("admin connected");
-                  break;
-               default:
-                  conectionManager.sendMessage(new JsonResponse<>(Msg.Error.name(),Msg.Error.name(),"usuario no valido"));
-                  System.err.println("usuario no valido");
-                  break;
-            }
-
-            System.out.println("Server started");
+            userOption(status, conectionManager);
          } catch (SocketException e) {
             System.err.println("Desconeccion subita" + socket.getLocalAddress());
          } catch (IOException e) {
             e.printStackTrace();
          }
       }
+   }
 
+   private void userOption(JsonResponse<String> status, ConectionManager conectionManager) {
+      switch (status.getMessage()) {
+         case "user":
+            handleUserConection(conectionManager, status.getData());
+            break;
+         case "admin":
+            handleAdminConection(conectionManager);
+            break;
+         default:
+            handleInvalidUser(conectionManager);
+            break;
+      }
+   }
+
+   private void handleInvalidUser(ConectionManager conectionManager) {
+      conectionManager
+            .sendMessage(new JsonResponse<>(Msg.Error.name(), Msg.Error.name(), "usuario no valido"));
+      System.err.println("usuario no valido");
+   }
+
+   private void handleAdminConection(ConectionManager conectionManager) {
+
+      CinemaAdminConections cinemaAdminConections = new CinemaAdminConections(conectionManager, cm);
+      cinemaAdminConections.start();
+      conectionManager.sendMessage(new JsonResponse<>(Msg.Error.name(), Msg.DONE.name(), "usuario valido"));
+      System.out.println("admin connected");
+   }
+
+   private void handleUserConection(ConectionManager conectionManager, String userName) {
+      CinemaUserConections cinemaUserConections = new CinemaUserConections(conectionManager, cm,
+            userName);
+      cinemaUserConections.start();
+      conectionManager.sendMessage(new JsonResponse<>(Msg.Error.name(), Msg.DONE.name(), "usuario valido"));
+      System.out.println("User conectado");
    }
 
 }
