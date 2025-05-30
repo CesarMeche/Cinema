@@ -106,7 +106,7 @@ public class CinemaUserConections extends Thread {
     private void checkBook(JsonResponse<String> msg) {
         try {
             JsonResponse<String> dataResponse = conectionManager.convertData(msg, String.class);
-            String userName = dataResponse.getData();
+           
             List<Book> books = cinemaManager.checkBook(userName);
             if (books == null || books.isEmpty()) {
                 conectionManager.sendMessage(new JsonResponse<>("No existe la reserva", Msg.Error.name(), null));
