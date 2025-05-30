@@ -2,6 +2,7 @@ package co.edu.uptc.server.model;
 
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.Set;
 import java.util.UUID;
 import java.util.ArrayList;
@@ -91,9 +92,7 @@ public class CinemaManager implements IModel {
         schedule.add(actualSchedule);
         schedule.addAll(previusSchedules);
         data.add(schedule);
-
         data.add(booksqQueueu.toList());
-
         fm.saveData(data);
     }
 
@@ -105,20 +104,77 @@ public class CinemaManager implements IModel {
 
     @Override
     public boolean selectSeat(String movieName, String auditoriumName, String dateString, String row, String seat) {
-        LocalDateTime date = LocalDateTime.parse(dateString);
-        AVLTree<Screening> screenings = actualSchedule.getScreenings().get(movieName);
-        Screening screening = findScreening(screenings, date, auditoriumName);
+        try {
+            return selectSeats(movieName, auditoriumName, dateString, row, seat);
+        } catch (NumberFormatException e) {
+            System.err.println("Invalid seat number: " + e.getMessage());
+            return false;
+        } catch (DateTimeParseException e) {
+            System.err.println("Invalid date format: " + e.getMessage());
+            return false;
+        } catch (Exception e) {
+            System.err.println("Error selecting seat: " + e.getMessage());
+            return false;
+        }
 
-        int rowNumber = row.charAt(0) - 65;
-        int seatNumber = Integer.parseInt(seat);
+    }
+
+    private boolean selectSeats(String movieName, String auditoriumName, String dateString, String row, String seat) {
+        LocalDateTime date = parseDate(dateString);
+
+        AVLTree<Screening> screenings = getScreeningsForMovie(movieName);
+        Screening screening = findMatchingScreening(screenings, date, auditoriumName);
+
+        int rowNumber = convertRowToIndex(row);
+        int seatNumber = parseSeatNumber(seat);
+
+        validateSeatIndices(screening, rowNumber, seatNumber);
+
+        return reserveSeat(screening, rowNumber, seatNumber);
+    }
+
+    private LocalDateTime parseDate(String dateString) {
+        return LocalDateTime.parse(dateString);
+    }
+
+    private AVLTree<Screening> getScreeningsForMovie(String movieName) {
+        AVLTree<Screening> screenings = actualSchedule.getScreenings().get(movieName);
+        if (screenings == null) {
+            throw new IllegalArgumentException("No screenings found for movie: " + movieName);
+        }
+        return screenings;
+    }
+
+    private Screening findMatchingScreening(AVLTree<Screening> screenings, LocalDateTime date, String auditoriumName) {
+        Screening screening = findScreening(screenings, date, auditoriumName);
+        if (screening == null) {
+            throw new IllegalArgumentException("No screening found for the provided date and auditorium.");
+        }
+        return screening;
+    }
+
+    private int parseSeatNumber(String seat) {
+        return Integer.parseInt(seat);
+    }
+
+    private void validateSeatIndices(Screening screening, int rowNumber, int seatNumber) {
+        Seat[][] seats = screening.getScreeningAuditorium().getSeat();
+        if (rowNumber < 0 || rowNumber >= seats.length || seatNumber < 0 || seatNumber >= seats[rowNumber].length) {
+            throw new IndexOutOfBoundsException("Seat or row index out of bounds.");
+        }
+    }
+
+    private boolean reserveSeat(Screening screening, int rowNumber, int seatNumber) {
         if (!screening.isocuped(rowNumber, seatNumber)) {
             screening.getScreeningAuditorium().getSeat()[rowNumber][seatNumber].setOcuped(true);
             return true;
         } else {
-            // TODO hacer esta verificacion xdd throw new NullPointerException("ocupao");
             return false;
         }
+    }
 
+    private int convertRowToIndex(String row) {
+        return row.toUpperCase().charAt(0) - 'A';
     }
 
     private Screening findScreening(AVLTree<Screening> screenings, LocalDateTime date, String auditoriumName) {
@@ -149,20 +205,25 @@ public class CinemaManager implements IModel {
     public void createBook(String movie, String auditorium, String dateStr, String row, String seat, String userName) {
         LocalDateTime date = LocalDateTime.parse(dateStr);
         if (selectSeat(movie, auditorium, dateStr, row, seat)) {
-            Book book = new Book();
-            // TODO manejar esto ssdsdx
-            book.setId("pala");
-            book.setMovieTitle(movie);
-            book.setAuditoriumName(auditorium);
-            book.setDate(date);
-            book.setSeatRow(row);
-            book.setSeatNumber(Integer.parseInt(seat));
-            book.setValidated(false);
-            book.setUser(userName);
+            Book book = createBookEntry(movie, auditorium, date, row, seat, userName);
             booksqQueueu.push(book);
         } else {
             throw new RuntimeException("El asiento ya está ocupado");
         }
+    }
+
+    private Book createBookEntry(String movie, String auditorium, LocalDateTime date, String row, String seat,
+            String userName) {
+        Book book = new Book();
+        book.setId(UUID.randomUUID().toString());
+        book.setMovieTitle(movie);
+        book.setAuditoriumName(auditorium);
+        book.setDate(date);
+        book.setSeatRow(row);
+        book.setSeatNumber(Integer.parseInt(seat));
+        book.setValidated(false);
+        book.setUser(userName);
+        return book;
     }
 
     @Override
@@ -193,22 +254,28 @@ public class CinemaManager implements IModel {
         while (it.hasNext()) {
             Book book = it.next();
             if (book.getId().equals(bookId)) {
-                it.remove(); // Quita del sistema
+                it.remove();
 
-                // Desocupar el asiento
-                Screening screening = findScreening(
-                        actualSchedule.getScreenings().get(book.getMovieTitle()),
-                        book.getDate(),
-                        book.getAuditoriumName());
-                if (screening != null) {
-                    int rowNumber = book.getSeatRow().charAt(0) - 65;
-                    int seatNumber = book.getSeatNumber() - 1;
-                    screening.getScreeningAuditorium().getSeat()[rowNumber][seatNumber].setOcuped(false);
-                }
+                releaseSeat(book);
                 return true;
             }
         }
         return false;
+    }
+
+    private void releaseSeat(Book book) {
+        Screening screening = findScreening(
+                actualSchedule.getScreenings().get(book.getMovieTitle()),
+                book.getDate(),
+                book.getAuditoriumName());
+        if (screening != null) {
+            int rowNumber = convertRowToIndex(book.getSeatRow());
+            int seatNumber = book.getSeatNumber() - 1;
+            if (rowNumber >= 0 && rowNumber < screening.getScreeningAuditorium().getSeat().length &&
+                    seatNumber >= 0 && seatNumber < screening.getScreeningAuditorium().getSeat()[rowNumber].length) {
+                screening.getScreeningAuditorium().getSeat()[rowNumber][seatNumber].setOcuped(false);
+            }
+        }
     }
 
     // admin operations
