@@ -53,7 +53,7 @@ public class FileManager {
 		write(data.get(0), moviesFile);
 		write(data.get(1), auditoriumsFile);
 		write(data.get(2), schedulesFile);
-		 write(data.get(3), booksFile);
+		write(data.get(3), booksFile);
 	}
 
 	public <T> void write(List<T> list, File file) {

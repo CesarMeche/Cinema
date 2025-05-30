@@ -439,92 +439,93 @@ public class CinemaManager implements IModel {
         }
     }
 
-    // @Override
-public boolean configurateAuditorium(String data, String auditoriumName, String option) {
-    Auditorium auditorium = searchAuditoriumByName(auditoriumName);
-    if (auditorium == null) return false;
-
-    EditAudithorium editOption;
-    try {
-        editOption = EditAudithorium.valueOf(option.toUpperCase());
-    } catch (IllegalArgumentException e) {
-        System.err.println("Opción inválida para configurar auditorio: " + option);
-        return false;
-    }
-
-    switch (editOption) {
-        case NAME:
-            updateAuditoriumName(auditoriumName, data, auditorium);
-            break;
-        case SIZE:
-            if (!updateAuditoriumSize(data, auditorium)) {
-                return false;
-            }
-            break;
-        default:
-            System.err.println("Opción no reconocida en configurateAuditorium");
+    @Override
+    public boolean configurateAuditorium(String data, String auditoriumName, String option) {
+        Auditorium auditorium = searchAuditoriumByName(auditoriumName);
+        if (auditorium == null)
             return false;
-    }
-    return true;
-}
 
-private void updateAuditoriumName(String oldName, String newName, Auditorium auditorium) {
-    updateNameInBooks(oldName, newName);
-    updateNameInSchedules(oldName, newName, actualSchedule);
-    updateNameInPreviousSchedules(oldName, newName);
-    auditorium.setName(newName);
-}
-
-private void updateNameInBooks(String oldName, String newName) {
-    for (Book book : booksqQueueu.toList()) {
-        if (book.getAuditoriumName().equals(oldName)) {
-            book.setAuditoriumName(newName);
+        EditAudithorium editOption;
+        try {
+            editOption = EditAudithorium.valueOf(option.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            System.err.println("Opción inválida para configurar auditorio: " + option);
+            return false;
         }
-    }
-}
 
-private void updateNameInPreviousSchedules(String oldName, String newName) {
-    for (Schedule schedule : previusSchedules) {
-        updateNameInSchedules(oldName, newName, schedule);
+        switch (editOption) {
+            case NAME:
+                updateAuditoriumName(auditoriumName, data, auditorium);
+                break;
+            case SIZE:
+                if (!updateAuditoriumSize(data, auditorium)) {
+                    return false;
+                }
+                break;
+            default:
+                System.err.println("Opción no reconocida en configurateAuditorium");
+                return false;
+        }
+        return true;
     }
-}
 
-private void updateNameInSchedules(String oldName, String newName, Schedule schedule) {
-    for (AVLTree<Screening> screeningTree : schedule.getScreenings().values()) {
-        for (Screening screening : screeningTree.getInOrder()) {
-            if (screening.getScreeningAuditorium().getName().equals(oldName)) {
-                screening.getScreeningAuditorium().setName(newName);
+    private void updateAuditoriumName(String oldName, String newName, Auditorium auditorium) {
+        updateNameInBooks(oldName, newName);
+        updateNameInSchedules(oldName, newName, actualSchedule);
+        updateNameInPreviousSchedules(oldName, newName);
+        auditorium.setName(newName);
+    }
+
+    private void updateNameInBooks(String oldName, String newName) {
+        for (Book book : booksqQueueu.toList()) {
+            if (book.getAuditoriumName().equals(oldName)) {
+                book.setAuditoriumName(newName);
             }
         }
     }
-}
 
-private boolean updateAuditoriumSize(String sizeStr, Auditorium auditorium) {
-    AudithoriumSize sizeEnum;
-    try {
-        sizeEnum = AudithoriumSize.valueOf(sizeStr.toUpperCase());
-    } catch (IllegalArgumentException e) {
-        System.err.println("Tamaño de auditorio no válido. Usa: SMALL, MEDIUM o BIG.");
-        return false;
+    private void updateNameInPreviousSchedules(String oldName, String newName) {
+        for (Schedule schedule : previusSchedules) {
+            updateNameInSchedules(oldName, newName, schedule);
+        }
     }
 
-    int size = switch (sizeEnum) {
-        case SMALL -> 4;
-        case MEDIUM -> 7;
-        case BIG -> 10;
-    };
-
-    Auditorium updatedAuditorium = new Auditorium(auditorium.getName(), size, size);
-
-    int index = auditoriumsList.indexOf(auditorium);
-    if (index >= 0) {
-        auditoriumsList.set(index, updatedAuditorium);
-        return true;
-    } else {
-        System.err.println("Auditorio no encontrado en la lista para actualizar tamaño.");
-        return false;
+    private void updateNameInSchedules(String oldName, String newName, Schedule schedule) {
+        for (AVLTree<Screening> screeningTree : schedule.getScreenings().values()) {
+            for (Screening screening : screeningTree.getInOrder()) {
+                if (screening.getScreeningAuditorium().getName().equals(oldName)) {
+                    screening.getScreeningAuditorium().setName(newName);
+                }
+            }
+        }
     }
-}
+
+    private boolean updateAuditoriumSize(String sizeStr, Auditorium auditorium) {
+        AudithoriumSize sizeEnum;
+        try {
+            sizeEnum = AudithoriumSize.valueOf(sizeStr.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            System.err.println("Tamaño de auditorio no válido. Usa: SMALL, MEDIUM o BIG.");
+            return false;
+        }
+
+        int size = switch (sizeEnum) {
+            case SMALL -> 4;
+            case MEDIUM -> 7;
+            case BIG -> 10;
+        };
+
+        Auditorium updatedAuditorium = new Auditorium(auditorium.getName(), size, size);
+
+        int index = auditoriumsList.indexOf(auditorium);
+        if (index >= 0) {
+            auditoriumsList.set(index, updatedAuditorium);
+            return true;
+        } else {
+            System.err.println("Auditorio no encontrado en la lista para actualizar tamaño.");
+            return false;
+        }
+    }
 
     @Override
     public int generateReport(LocalDateTime first, LocalDateTime second) {

@@ -1,11 +1,9 @@
 package co.edu.uptc.server.network;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import co.edu.uptc.server.structures.avltree.AVLTree;
 import co.edu.uptc.server.structures.avltree.AVLTreeDeserializer;
@@ -25,12 +23,8 @@ public class ConectionManager {
 
     public ConectionManager(Socket socket) {
         this.socket = socket;
-
-        // Inicializa ObjectMapper con soporte para LocalDateTime y tu AVLTree
         this.mapper = new ObjectMapper();
         this.mapper.registerModule(new JavaTimeModule());
-
-        // Registra los serializers/deserializers de AVLTree si es necesario
         SimpleModule module = new SimpleModule();
         module.addSerializer(AVLTree.class, new AVLTreeSerializer());
         module.addDeserializer(AVLTree.class, new AVLTreeDeserializer());
@@ -56,8 +50,6 @@ public class ConectionManager {
 
     public <T> JsonResponse<T> receiveMessage(Class<T> clazz) throws IOException {
     String jsonMessage = dataInput.readUTF();
-
-    // Usamos TypeFactory para crear el tipo completo: JsonResponse<T>
     JavaType javaType = mapper.getTypeFactory()
             .constructParametricType(JsonResponse.class, clazz);
 
@@ -72,7 +64,6 @@ public class ConectionManager {
 
     public <T> JsonResponse<T> convertData(JsonResponse<?> response, Class<T> classType) {
         try {
-            // Convierte el campo "data" a JSON y luego a la clase deseada
             String jsonData = mapper.writeValueAsString(response.getData());
             T convertedData = mapper.readValue(jsonData, classType);
             return new JsonResponse<>(response.getStatus(), response.getMessage(), convertedData);

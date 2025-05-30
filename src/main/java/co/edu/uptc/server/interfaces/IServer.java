@@ -25,7 +25,7 @@ public class IServer {
         public boolean createScreening(String Auditorium,LocalDateTime date, String movieName);
         public boolean deleteScreening(String AuditoriumName, LocalDateTime date,String moveiName);
         public boolean configurateAuditorium(String data,String auditoriumName,String option);
-         public int generateReport(LocalDateTime first, LocalDateTime second);
+        public int generateReport(LocalDateTime first, LocalDateTime second);
 
     }
     public interface IController {

@@ -15,8 +15,9 @@ public class CinemaUserConections extends Thread {
     private CinemaManager cinemaManager;
     private UserOptions uOptions;
     private String userName;
+
     public CinemaUserConections(ConectionManager conectionManager, CinemaManager cinemaManager, String userName) {
-        this.userName=userName;
+        this.userName = userName;
         this.conectionManager = conectionManager;
         this.cinemaManager = cinemaManager;
     }
@@ -93,34 +94,31 @@ public class CinemaUserConections extends Thread {
     private void createBook(JsonResponse<String[]> msg) {
         try {
             JsonResponse<String[]> dataResponse = conectionManager.convertData(msg, String[].class);
-            String[] data = dataResponse.getData(); 
-            cinemaManager.createBook(data[0], data[1], data[2], data[3], data[4],userName);
+            String[] data = dataResponse.getData();
+            cinemaManager.createBook(data[0], data[1], data[2], data[3], data[4], userName);
             conectionManager.sendMessage(new JsonResponse<>("Reserva creada", Msg.DONE.name(), true));
         } catch (Exception e) {
-             e.printStackTrace();
+            e.printStackTrace();
             conectionManager.sendMessage(new JsonResponse<>("Error al crear reserva", Msg.Error.name(), false));
         }
     }
 
     private void checkBook(JsonResponse<String> msg) {
-    try {
-        JsonResponse<String> dataResponse = conectionManager.convertData(msg, String.class);
-        String data = dataResponse.getData(); 
-        List<Book> book = cinemaManager.checkBook(userName);
-
-        if (book == null || book.isEmpty()) {
-            // Si no hay reservas, envía el mensaje de error
+        try {
+            JsonResponse<String> dataResponse = conectionManager.convertData(msg, String.class);
+            String userName = dataResponse.getData();
+            List<Book> books = cinemaManager.checkBook(userName);
+            if (books == null || books.isEmpty()) {
+                conectionManager.sendMessage(new JsonResponse<>("No existe la reserva", Msg.Error.name(), null));
+            } else {
+                conectionManager.sendMessage(new JsonResponse<>("Reserva encontrada", Msg.DONE.name(), books));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
             conectionManager.sendMessage(new JsonResponse<>("No existe la reserva", Msg.Error.name(), null));
-        } else {
-            // Si hay reservas, envía el mensaje de éxito
-            conectionManager.sendMessage(new JsonResponse<>("Reserva encontrada", Msg.DONE.name(), book));
         }
-    } catch (Exception e) {
-        e.printStackTrace();
-        conectionManager.sendMessage(new JsonResponse<>("No existe la reserva", Msg.Error.name(), null));
-    }
-}
 
+    }
 
     private void validateBook(JsonResponse<String> msg) {
         boolean validated = cinemaManager.validateBook(msg.getData());

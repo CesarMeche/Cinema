@@ -21,7 +21,6 @@ public class Controller {
       try {
          this.serverSocket = new ServerSocket(port);
       } catch (IOException e) {
-         // TODO Auto-generated catch block
          e.printStackTrace();
       }
    }
