@@ -59,7 +59,7 @@
         }, {
           "row" : "B",
           "seatNumber" : 2,
-          "ocuped" : true
+          "ocuped" : false
         }, {
           "row" : "B",
           "seatNumber" : 3,
@@ -450,7 +450,7 @@
         }, {
           "row" : "A",
           "seatNumber" : 6,
-          "ocuped" : false
+          "ocuped" : true
         }, {
           "row" : "A",
           "seatNumber" : 7,
@@ -474,7 +474,7 @@
         }, {
           "row" : "B",
           "seatNumber" : 2,
-          "ocuped" : true
+          "ocuped" : false
         }, {
           "row" : "B",
           "seatNumber" : 3,
@@ -490,11 +490,11 @@
         }, {
           "row" : "B",
           "seatNumber" : 6,
-          "ocuped" : true
+          "ocuped" : false
         }, {
           "row" : "B",
           "seatNumber" : 7,
-          "ocuped" : true
+          "ocuped" : false
         }, {
           "row" : "B",
           "seatNumber" : 8,

@@ -1,6 +1,8 @@
 package co.edu.uptc.server.controller;
 
 import java.io.IOException;
+import java.util.List;
+
 import co.edu.uptc.server.model.CinemaManager;
 import co.edu.uptc.server.model.enums.Msg;
 import co.edu.uptc.server.model.enums.UserOptions;
@@ -90,7 +92,8 @@ public class CinemaUserConections extends Thread {
 
     private void createBook(JsonResponse<String[]> msg) {
         try {
-            String[] data = msg.getData(); // [movie, auditorium, dateStr, row, seat]
+            JsonResponse<String[]> dataResponse = conectionManager.convertData(msg, String[].class);
+            String[] data = dataResponse.getData(); 
             cinemaManager.createBook(data[0], data[1], data[2], data[3], data[4],userName);
             conectionManager.sendMessage(new JsonResponse<>("Reserva creada", Msg.DONE.name(), true));
         } catch (Exception e) {
@@ -100,15 +103,24 @@ public class CinemaUserConections extends Thread {
     }
 
     private void checkBook(JsonResponse<String> msg) {
-        try {
-            Book book = cinemaManager.checkBook(msg.getData());
-            conectionManager.sendMessage(new JsonResponse<>("Reserva encontrada", Msg.DONE.name(), book));
-        } catch (Exception e) {
-            e.printStackTrace();
-           conectionManager.sendMessage(new JsonResponse<>("No existe la reserva", Msg.Error.name(), null));
-        }
+    try {
+        JsonResponse<String> dataResponse = conectionManager.convertData(msg, String.class);
+        String data = dataResponse.getData(); 
+        List<Book> book = cinemaManager.checkBook(userName);
 
+        if (book == null || book.isEmpty()) {
+            // Si no hay reservas, envía el mensaje de error
+            conectionManager.sendMessage(new JsonResponse<>("No existe la reserva", Msg.Error.name(), null));
+        } else {
+            // Si hay reservas, envía el mensaje de éxito
+            conectionManager.sendMessage(new JsonResponse<>("Reserva encontrada", Msg.DONE.name(), book));
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+        conectionManager.sendMessage(new JsonResponse<>("No existe la reserva", Msg.Error.name(), null));
     }
+}
+
 
     private void validateBook(JsonResponse<String> msg) {
         boolean validated = cinemaManager.validateBook(msg.getData());

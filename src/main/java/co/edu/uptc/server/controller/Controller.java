@@ -1,6 +1,7 @@
 package co.edu.uptc.server.controller;
 
 import co.edu.uptc.server.model.CinemaManager;
+import co.edu.uptc.server.model.enums.Msg;
 import co.edu.uptc.server.network.ConectionManager;
 import co.edu.uptc.server.network.JsonResponse;
 
@@ -48,13 +49,16 @@ public class Controller {
                         status.getData());
                   cinemaUserConections.start();
                   System.out.println("User conectardo");
+                  conectionManager.sendMessage(new JsonResponse<>(Msg.Error.name(),Msg.DONE.name(),"usuario valido"));
                   break;
                case "admin":
                   CinemaAdminConections cinemaAdminConections = new CinemaAdminConections(conectionManager, cm);
                   cinemaAdminConections.start();
+                  conectionManager.sendMessage(new JsonResponse<>(Msg.Error.name(),Msg.DONE.name(),"usuario valido"));
                   System.out.println("admin connected");
                   break;
                default:
+                  conectionManager.sendMessage(new JsonResponse<>(Msg.Error.name(),Msg.Error.name(),"usuario no valido"));
                   System.err.println("usuario no valido");
                   break;
             }

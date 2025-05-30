@@ -3,7 +3,7 @@
   "user" : "user",
   "movieTitle" : "mikus",
   "auditoriumName" : "papaya",
-  "date" : [ 2025, 5, 28, 13, 50, 1 ],
+  "date" : [ 2025, 5, 28, 13, 50, 22 ],
   "seatRow" : "A",
   "seatNumber" : 6,
   "validated" : false

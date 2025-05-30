@@ -30,7 +30,6 @@ import lombok.Setter;
 public class CinemaManager implements IModel {
     // tentativo hacer que el admin pueda ver las reservas
     private Schedule actualSchedule;
-    private ArrayList<Schedule> futureSchedule;
     private ArrayList<Schedule> previusSchedules;
     private ArrayList<Movie> moviesList;
     private ArrayList<Auditorium> auditoriumsList;
@@ -38,7 +37,6 @@ public class CinemaManager implements IModel {
 
     public CinemaManager() {
         moviesList = new ArrayList<>();
-        futureSchedule = new ArrayList<>();
         previusSchedules = new ArrayList<>();
         auditoriumsList = new ArrayList<>();
         booksqQueueu = new MyQueueu<>();
@@ -91,7 +89,6 @@ public class CinemaManager implements IModel {
         data.add(auditoriumsList);
         ArrayList schedule = new ArrayList<>();
         schedule.add(actualSchedule);
-        schedule.addAll(futureSchedule);
         schedule.addAll(previusSchedules);
         data.add(schedule);
 
@@ -169,13 +166,14 @@ public class CinemaManager implements IModel {
     }
 
     @Override
-    public Book checkBook(String bookId) {
+    public List<Book> checkBook(String user) {
+        List<Book> books = new ArrayList<>();
         for (Book book : booksqQueueu) {
-            if (book.getId().equals(bookId)) {
-                return book;
+            if (book.getUser().equals(user)) {
+                books.add(book);
             }
         }
-        return null;
+        return books;
     }
 
     @Override
@@ -203,8 +201,8 @@ public class CinemaManager implements IModel {
                         book.getDate(),
                         book.getAuditoriumName());
                 if (screening != null) {
-                    int rowNumber = book.getSeatRow().charAt(0) - 64;
-                    int seatNumber = book.getSeatNumber();
+                    int rowNumber = book.getSeatRow().charAt(0) - 65;
+                    int seatNumber = book.getSeatNumber() - 1;
                     screening.getScreeningAuditorium().getSeat()[rowNumber][seatNumber].setOcuped(false);
                 }
                 return true;
@@ -301,7 +299,7 @@ public class CinemaManager implements IModel {
         if (actualSchedule == null) {
             actualSchedule = new Schedule(findWeek(date), findWeek(date).plusDays(6));
         }
-        if (isbetween(actualSchedule.getDateInit(), date, actualSchedule.getDateEnd())) {
+        if (isBetween(actualSchedule.getDateInit(), date, actualSchedule.getDateEnd())) {
             actualSchedule(movie.getTitle());
             actualSchedule.addScreening(movie.getTitle(), screening);
         } else {
@@ -310,8 +308,6 @@ public class CinemaManager implements IModel {
                 schedule.addMovie(screening.getMovie().getTitle());
             }
             schedule.addScreening(screening.getMovie().getTitle(), screening);
-            futureSchedule.add(schedule);
-
         }
 
     }
@@ -329,7 +325,7 @@ public class CinemaManager implements IModel {
         }
     }
 
-    private boolean isbetween(LocalDateTime first, LocalDateTime middle, LocalDateTime second) {
+    private boolean isBetween(LocalDateTime first, LocalDateTime middle, LocalDateTime second) {
         return middle.isAfter(first) & middle.isBefore(second) || middle.getDayOfWeek() == DayOfWeek.MONDAY
                 || middle.getDayOfWeek() == DayOfWeek.FRIDAY;
     }
@@ -394,7 +390,6 @@ public class CinemaManager implements IModel {
         actualizeDataFromQueue(auditoriumName, data);
         actualizeDataFromSchedule(auditoriumName, data, actualSchedule);
         actualizeDataFromList(auditoriumName, data, previusSchedules);
-        actualizeDataFromList(auditoriumName, data, futureSchedule);
     }
 
     private void actualizeDataFromQueue(String auditoriumName, String data) {
@@ -458,47 +453,60 @@ public class CinemaManager implements IModel {
         return true;
     }
 
-
     @Override
     public int generateReport(LocalDateTime first, LocalDateTime second) {
         int sells = 0;
-        // TODO reduncancia
-        if (isbetween(first, actualSchedule.getDateInit(), second)) {
-            sells += ocupedSeatsFromASchedule(actualSchedule, first, second);
-        } else {
-            for (Schedule schedule : previusSchedules) {
-                sells += ocupedSeatsFromASchedule(schedule, first, second);
+
+        // Contar asientos ocupados de la programación actual, si está dentro del rango
+        if (actualSchedule != null && isBetween(first, actualSchedule.getDateInit(), second)) {
+            sells += countOccupiedSeats(actualSchedule, first, second);
+        }
+
+        // Contar asientos ocupados de las programaciones anteriores, si están dentro
+        // del rango
+        for (Schedule schedule : previusSchedules) {
+            if (isBetween(first, schedule.getDateInit(), second)) {
+                sells += countOccupiedSeats(schedule, first, second);
             }
         }
-        // TODO variable y validacion y reservas y asi
 
-        sells *= 9000;
-        return sells;
+        // Multiplicar por el precio (9000 pesos por asiento)
+        return sells * 9000;
     }
 
-    private int ocupedSeatsFromASchedule(Schedule schedule, LocalDateTime first, LocalDateTime second) {
-        int sells = 0;
-        if (isbetween(first, schedule.getDateInit(), second)) {
-            for (AVLTree<Screening> screenings : schedule.getScreenings().values()) {
-                for (Screening screening : screenings.getInOrder()) {
-                    sells += ocupedSeats(screening.getScreeningAuditorium());
+    // Método para contar asientos ocupados de un Schedule entre dos fechas
+    private int countOccupiedSeats(Schedule schedule, LocalDateTime first, LocalDateTime second) {
+        int occupiedSeats = 0;
+
+        for (AVLTree<Screening> screenings : schedule.getScreenings().values()) {
+            for (Screening screening : screenings.getInOrder()) {
+                LocalDateTime screeningDate = screening.getDate();
+
+                // Validar si la función está dentro del rango
+                if (isBetween(first, screeningDate, second)) {
+                    // Contar asientos ocupados del auditorio de esta función
+                    occupiedSeats += countOccupiedSeatsInAuditorium(screening.getScreeningAuditorium());
                 }
             }
         }
-        return sells;
+
+        return occupiedSeats;
     }
 
-    private int ocupedSeats(Auditorium auditorium) {
-        int sells = 0;
+    // Método para contar asientos ocupados en un auditorio
+    private int countOccupiedSeatsInAuditorium(Auditorium auditorium) {
+        int count = 0;
         Seat[][] seats = auditorium.getSeat();
-        for (int i = 0; i < seats.length; i++) {
-            for (int j = 0; j < seats[i].length; j++) {
-                if (seats[i][j].isOcuped()) {
-                    sells++;
+
+        for (Seat[] row : seats) {
+            for (Seat seat : row) {
+                if (seat.isOcuped()) {
+                    count++;
                 }
             }
         }
-        return sells;
+
+        return count;
     }
 
 }
