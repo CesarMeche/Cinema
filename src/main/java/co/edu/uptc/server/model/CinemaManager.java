@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import co.edu.uptc.server.interfaces.IServer.IModel;
+import co.edu.uptc.server.model.enums.AudithoriumSize;
 import co.edu.uptc.server.model.enums.EditAudithorium;
 import co.edu.uptc.server.model.enums.EditMovie;
 import co.edu.uptc.server.model.pojos.Auditorium;
@@ -111,7 +112,7 @@ public class CinemaManager implements IModel {
         AVLTree<Screening> screenings = actualSchedule.getScreenings().get(movieName);
         Screening screening = findScreening(screenings, date, auditoriumName);
 
-        int rowNumber = row.charAt(0) - 64;
+        int rowNumber = row.charAt(0) - 65;
         int seatNumber = Integer.parseInt(seat);
         if (!screening.isocuped(rowNumber, seatNumber)) {
             screening.getScreeningAuditorium().getSeat()[rowNumber][seatNumber].setOcuped(true);
@@ -134,25 +135,25 @@ public class CinemaManager implements IModel {
         }
         return null;
     }
-    private boolean findDate(LocalDateTime date, LocalDateTime screeningDate) {
-    if (date == null || screeningDate == null) {
-        return false;
-    }
-    // Ignorar segundos y nanos comparando año, mes, día, hora y minuto
-    return date.getYear() == screeningDate.getYear() &&
-           date.getMonth() == screeningDate.getMonth() &&
-           date.getDayOfMonth() == screeningDate.getDayOfMonth() &&
-           date.getHour() == screeningDate.getHour() &&
-           date.getMinute() == screeningDate.getMinute();
-}
 
+    private boolean findDate(LocalDateTime date, LocalDateTime screeningDate) {
+        if (date == null || screeningDate == null) {
+            return false;
+        }
+        // Ignorar segundos y nanos comparando año, mes, día, hora y minuto
+        return date.getYear() == screeningDate.getYear() &&
+                date.getMonth() == screeningDate.getMonth() &&
+                date.getDayOfMonth() == screeningDate.getDayOfMonth() &&
+                date.getHour() == screeningDate.getHour() &&
+                date.getMinute() == screeningDate.getMinute();
+    }
 
     @Override
-    public void createBook(String movie, String auditorium, String dateStr, String row, String seat,String userName) {
+    public void createBook(String movie, String auditorium, String dateStr, String row, String seat, String userName) {
         LocalDateTime date = LocalDateTime.parse(dateStr);
         if (selectSeat(movie, auditorium, dateStr, row, seat)) {
             Book book = new Book();
-            //TODO manejar esto ssdsdx
+            // TODO manejar esto ssdsdx
             book.setId("pala");
             book.setMovieTitle(movie);
             book.setAuditoriumName(auditorium);
@@ -160,6 +161,7 @@ public class CinemaManager implements IModel {
             book.setSeatRow(row);
             book.setSeatNumber(Integer.parseInt(seat));
             book.setValidated(false);
+            book.setUser(userName);
             booksqQueueu.push(book);
         } else {
             throw new RuntimeException("El asiento ya está ocupado");
@@ -194,6 +196,17 @@ public class CinemaManager implements IModel {
             Book book = it.next();
             if (book.getId().equals(bookId)) {
                 it.remove(); // Quita del sistema
+
+                // Desocupar el asiento
+                Screening screening = findScreening(
+                        actualSchedule.getScreenings().get(book.getMovieTitle()),
+                        book.getDate(),
+                        book.getAuditoriumName());
+                if (screening != null) {
+                    int rowNumber = book.getSeatRow().charAt(0) - 64;
+                    int seatNumber = book.getSeatNumber();
+                    screening.getScreeningAuditorium().getSeat()[rowNumber][seatNumber].setOcuped(false);
+                }
                 return true;
             }
         }
@@ -358,9 +371,9 @@ public class CinemaManager implements IModel {
         Auditorium auditoriumn = searchAuditoriumByName(auditoriumName);
         EditAudithorium editOption = EditAudithorium.valueOf(option);
         if (auditoriumn != null) {
-
             switch (editOption) {
                 case NAME:
+                    actualizeData(auditoriumName, data);
                     auditoriumn.setName(data);
                     break;
                 case SIZE:
@@ -377,16 +390,74 @@ public class CinemaManager implements IModel {
         }
     }
 
-    private void editAuditorium(String data, Auditorium auditoriumn) {
-        String[] parts = data.split(";");
-        int[] size = new int[parts.length];
-
-        for (int i = 0; i < parts.length; i++) {
-            size[i] = Integer.parseInt(parts[i]);
-        }
-        int index = auditoriumsList.indexOf(auditoriumn);
-        auditoriumsList.set(index, new Auditorium(auditoriumn.getName(), size[0], size[1]));
+    private void actualizeData(String auditoriumName, String data) {
+        actualizeDataFromQueue(auditoriumName, data);
+        actualizeDataFromSchedule(auditoriumName, data, actualSchedule);
+        actualizeDataFromList(auditoriumName, data, previusSchedules);
+        actualizeDataFromList(auditoriumName, data, futureSchedule);
     }
+
+    private void actualizeDataFromQueue(String auditoriumName, String data) {
+        for (Book book : booksqQueueu.toList()) {
+            if (book.getAuditoriumName().equals(auditoriumName)) {
+                book.setAuditoriumName(data);
+            }
+        }
+    }
+
+    private void actualizeDataFromList(String auditoriumName, String data, ArrayList<Schedule> schedules) {
+        for (Schedule schedule : schedules) {
+            actualizeDataFromSchedule(auditoriumName, data, schedule);
+        }
+    }
+
+    private void actualizeDataFromSchedule(String auditoriumName, String data, Schedule schedule) {
+        for (AVLTree<Screening> screeningTree : schedule.getScreenings().values()) {
+            for (Screening screening : screeningTree.getInOrder()) {
+                if (screening.getScreeningAuditorium().getName().equals(auditoriumName)) {
+                    screening.getScreeningAuditorium().setName(data);
+                }
+            }
+        }
+    }
+
+    private boolean editAuditorium(String data, Auditorium auditorium) {
+        // Validar que el valor de "data" sea uno de los tamaños predefinidos
+        AudithoriumSize sizeEnum;
+        try {
+            sizeEnum = AudithoriumSize.valueOf(data.toUpperCase());
+        } catch (Exception e) {
+            System.err.println(
+
+                    "Tamaño de auditorio no válido. Usa: SMALL, MEDIUM o BIG.");
+            return false;
+        }
+
+        int size;
+        switch (sizeEnum) {
+            case SMALL:
+                size = 4;
+                break;
+            case MEDIUM:
+                size = 7;
+                break;
+            case BIG:
+                size = 10;
+                break;
+            default:
+                throw new RuntimeException("Error inesperado al asignar tamaño.");
+        }
+
+        // Creamos el nuevo auditorio con el tamaño correcto y el mismo nombre
+        Auditorium updatedAuditorium = new Auditorium(auditorium.getName(), size, size);
+
+        // Actualizamos la lista principal
+        int index = auditoriumsList.indexOf(auditorium);
+        auditoriumsList.set(index, updatedAuditorium);
+
+        return true;
+    }
+
 
     @Override
     public int generateReport(LocalDateTime first, LocalDateTime second) {

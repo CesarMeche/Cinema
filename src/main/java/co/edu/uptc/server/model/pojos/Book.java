@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class Book {
-    private String id; // ID único
+    private String id; 
     private String user;
     private String movieTitle;
     private String auditoriumName;
@@ -17,6 +17,5 @@ public class Book {
     private String seatRow;
     private int seatNumber;
     private boolean isValidated;
-    // getters y setters
 }
 

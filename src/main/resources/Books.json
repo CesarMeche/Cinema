@@ -1,9 +1,10 @@
 [ {
   "id" : "pala",
+  "user" : "user",
   "movieTitle" : "mikus",
   "auditoriumName" : "papaya",
-  "date" : [ 2025, 5, 28, 13, 50, 23, 716328900 ],
+  "date" : [ 2025, 5, 28, 13, 50, 1 ],
   "seatRow" : "A",
-  "seatNumber" : 5,
-  "validated" : true
+  "seatNumber" : 6,
+  "validated" : false
 } ]

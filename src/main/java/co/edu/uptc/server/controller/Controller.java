@@ -29,12 +29,14 @@ public class Controller {
    @SuppressWarnings("rawtypes")
    public void initCinemaSystem() {
       cm = new CinemaManager();
+       //cm.createBook("mikus","papaya",LocalDateTime.of(2025, 5, 28, 13, 50, 1).toString(),"A","6","user");
+        
+       cm.saveData();
       System.out.println("cine started");
-      
-        cm.saveData();
+
       System.out.println("Server started");
       while (true) {
-      try {
+         try {
             this.socket = serverSocket.accept();
             System.out.println("Client connected");
             ConectionManager conectionManager = new ConectionManager(socket);
@@ -42,7 +44,8 @@ public class Controller {
             System.out.println("");
             switch (status.getMessage()) {
                case "user":
-                  CinemaUserConections cinemaUserConections = new CinemaUserConections(conectionManager, cm,status.getData());
+                  CinemaUserConections cinemaUserConections = new CinemaUserConections(conectionManager, cm,
+                        status.getData());
                   cinemaUserConections.start();
                   System.out.println("User conectardo");
                   break;
@@ -58,7 +61,7 @@ public class Controller {
 
             System.out.println("Server started");
          } catch (SocketException e) {
-            System.err.println("Desconeccion subita"+socket.getLocalAddress());
+            System.err.println("Desconeccion subita" + socket.getLocalAddress());
          } catch (IOException e) {
             e.printStackTrace();
          }
