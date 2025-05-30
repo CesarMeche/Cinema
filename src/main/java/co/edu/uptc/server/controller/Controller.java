@@ -38,11 +38,11 @@ public class Controller {
             this.socket = serverSocket.accept();
             System.out.println("Client connected");
             ConectionManager conectionManager = new ConectionManager(socket);
-            JsonResponse status = conectionManager.receiveMessage(String.class);
+            JsonResponse<String> status = conectionManager.receiveMessage(String.class);
             System.out.println("");
             switch (status.getMessage()) {
                case "user":
-                  CinemaUserConections cinemaUserConections = new CinemaUserConections(conectionManager, cm);
+                  CinemaUserConections cinemaUserConections = new CinemaUserConections(conectionManager, cm,status.getData());
                   cinemaUserConections.start();
                   System.out.println("User conectardo");
                   break;

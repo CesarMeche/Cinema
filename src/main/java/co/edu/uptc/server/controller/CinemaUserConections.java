@@ -12,11 +12,11 @@ public class CinemaUserConections extends Thread {
     private ConectionManager conectionManager;
     private CinemaManager cinemaManager;
     private UserOptions uOptions;
-
-    public CinemaUserConections(ConectionManager conectionManager, CinemaManager cinemaManager) {
+    private String userName;
+    public CinemaUserConections(ConectionManager conectionManager, CinemaManager cinemaManager, String userName) {
+        this.userName=userName;
         this.conectionManager = conectionManager;
         this.cinemaManager = cinemaManager;
-
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -89,22 +89,25 @@ public class CinemaUserConections extends Thread {
     }
 
     private void createBook(JsonResponse<String[]> msg) {
-        String[] data = msg.getData(); // [movie, auditorium, dateStr, row, seat]
         try {
-            cinemaManager.createBook(data[0], data[1], data[2], data[3], data[4]);
+            String[] data = msg.getData(); // [movie, auditorium, dateStr, row, seat]
+            cinemaManager.createBook(data[0], data[1], data[2], data[3], data[4],userName);
             conectionManager.sendMessage(new JsonResponse<>("Reserva creada", Msg.DONE.name(), true));
         } catch (Exception e) {
+             e.printStackTrace();
             conectionManager.sendMessage(new JsonResponse<>("Error al crear reserva", Msg.Error.name(), false));
         }
     }
 
     private void checkBook(JsonResponse<String> msg) {
-        Book book = cinemaManager.checkBook(msg.getData());
-        if (book != null) {
+        try {
+            Book book = cinemaManager.checkBook(msg.getData());
             conectionManager.sendMessage(new JsonResponse<>("Reserva encontrada", Msg.DONE.name(), book));
-        } else {
-            conectionManager.sendMessage(new JsonResponse<>("No existe la reserva", Msg.Error.name(), null));
+        } catch (Exception e) {
+            e.printStackTrace();
+           conectionManager.sendMessage(new JsonResponse<>("No existe la reserva", Msg.Error.name(), null));
         }
+
     }
 
     private void validateBook(JsonResponse<String> msg) {

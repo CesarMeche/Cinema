@@ -14,7 +14,7 @@ public class IServer {
         //client operations
         public  HashMap<String, AVLTree<Screening>> getMovieSchedule( );
         public boolean selectSeat(String moviename,String auditoriumName,String date,String row,String seat);
-        public void createBook(String movie, String auditorium, String dateStr, String row, String seat);
+        public void createBook(String movie, String auditorium, String date, String row, String seat,String userName);
         public Book checkBook(String bookId);
         public boolean validateBook(String bookId);
         public boolean cancelBook(String bookId);

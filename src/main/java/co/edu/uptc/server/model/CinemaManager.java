@@ -148,7 +148,7 @@ public class CinemaManager implements IModel {
 
 
     @Override
-    public void createBook(String movie, String auditorium, String dateStr, String row, String seat) {
+    public void createBook(String movie, String auditorium, String dateStr, String row, String seat,String userName) {
         LocalDateTime date = LocalDateTime.parse(dateStr);
         if (selectSeat(movie, auditorium, dateStr, row, seat)) {
             Book book = new Book();

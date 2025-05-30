@@ -10,6 +10,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class Book {
     private String id; // ID único
+    private String user;
     private String movieTitle;
     private String auditoriumName;
     private LocalDateTime date;

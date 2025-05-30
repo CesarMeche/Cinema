@@ -1,42 +1,40 @@
 package co.edu.uptc.server.network;
 
-import com.google.gson.*;
-import com.google.gson.reflect.TypeToken;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.type.TypeFactory;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import co.edu.uptc.server.structures.avltree.AVLTree;
+import co.edu.uptc.server.structures.avltree.AVLTreeDeserializer;
+import co.edu.uptc.server.structures.avltree.AVLTreeSerializer;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.net.Socket;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 public class ConectionManager {
 
     private Socket socket;
     private DataInputStream dataInput;
     private DataOutputStream dataOutput;
-    private Gson gson;
+    private ObjectMapper mapper;
 
     public ConectionManager(Socket socket) {
-        // chanchito feliz
         this.socket = socket;
 
-        // 👉 Crea un Gson que maneja LocalDateTime
-        this.gson = new GsonBuilder()
-                .registerTypeAdapter(LocalDateTime.class, new JsonSerializer<LocalDateTime>() {
-                    @Override
-                    public JsonElement serialize(LocalDateTime src, java.lang.reflect.Type typeOfSrc, JsonSerializationContext context) {
-                        return new JsonPrimitive(src.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
-                    }
-                })
-                .registerTypeAdapter(LocalDateTime.class, new JsonDeserializer<LocalDateTime>() {
-                    @Override
-                    public LocalDateTime deserialize(JsonElement json, java.lang.reflect.Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-                        return LocalDateTime.parse(json.getAsString(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-                    }
-                })
-                .create();
+        // Inicializa ObjectMapper con soporte para LocalDateTime y tu AVLTree
+        this.mapper = new ObjectMapper();
+        this.mapper.registerModule(new JavaTimeModule());
+
+        // Registra los serializers/deserializers de AVLTree si es necesario
+        SimpleModule module = new SimpleModule();
+        module.addSerializer(AVLTree.class, new AVLTreeSerializer());
+        module.addDeserializer(AVLTree.class, new AVLTreeDeserializer());
+        this.mapper.registerModule(module);
 
         try {
             this.dataInput = new DataInputStream(this.socket.getInputStream());
@@ -46,31 +44,42 @@ public class ConectionManager {
         }
     }
 
-    public void sendMessage(JsonResponse message)  {
-        String jsonMessage = gson.toJson(message);
+    public void sendMessage(JsonResponse<?> message) {
         try {
+            String jsonMessage = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(message);
             dataOutput.writeUTF(jsonMessage);
             dataOutput.flush();
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
 
     public <T> JsonResponse<T> receiveMessage(Class<T> clazz) throws IOException {
+    String jsonMessage = dataInput.readUTF();
+
+    // Usamos TypeFactory para crear el tipo completo: JsonResponse<T>
+    JavaType javaType = mapper.getTypeFactory()
+            .constructParametricType(JsonResponse.class, clazz);
+
+    return mapper.readValue(jsonMessage, javaType);
+}
+
+
+    public JsonResponse<?> receiveMessage() throws IOException {
         String jsonMessage = dataInput.readUTF();
-        Type type = TypeToken.getParameterized(JsonResponse.class, clazz).getType();
-        return gson.fromJson(jsonMessage, type);
-    }
-    public JsonResponse receiveMessage() throws IOException {
-        String jsonMessage = dataInput.readUTF();
-        return gson.fromJson(jsonMessage, JsonResponse.class);
+        return mapper.readValue(jsonMessage, JsonResponse.class);
     }
 
     public <T> JsonResponse<T> convertData(JsonResponse<?> response, Class<T> classType) {
-        String jsonData = gson.toJson(response.getData());
-        T convertedData = gson.fromJson(jsonData, classType);
-        return new JsonResponse<>(response.getStatus(), response.getMessage(), convertedData);
+        try {
+            // Convierte el campo "data" a JSON y luego a la clase deseada
+            String jsonData = mapper.writeValueAsString(response.getData());
+            T convertedData = mapper.readValue(jsonData, classType);
+            return new JsonResponse<>(response.getStatus(), response.getMessage(), convertedData);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     public void close() {
