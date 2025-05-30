@@ -73,22 +73,15 @@ public class CinemaAdminConections extends Thread {
         LocalDateTime a = LocalDateTime.parse(message.getData()[0]);
         LocalDateTime b = LocalDateTime.parse(message.getData()[1]);
         int report = cinemaManager.generateReport(a, b);
-        // TODO mejorar msg
-        // String msg = answer? Msg.DONE.name() : Msg.Error.name();
-
         conectionManager.sendMessage(new JsonResponse<Integer>("", Msg.DONE.name(), report));
-
     }
 
     private void configurateAuditorium(JsonResponse<String[]> message) {
         message = conectionManager.convertData(message, String[].class);
         try {
-
             boolean answer = cinemaManager.configurateAuditorium(message.getData()[0], message.getData()[1],message.getData()[2]);
-            // TODO mejorar msg
             conectionManager.sendMessage(new JsonResponse<Boolean>("", Msg.DONE.name(), answer));
         } catch (DateTimeParseException e) {
-            // TODO: handle exception
             conectionManager.sendMessage(new JsonResponse<Boolean>("", Msg.Error.name(), false));
         }
         
@@ -102,10 +95,8 @@ public class CinemaAdminConections extends Thread {
             boolean answer = cinemaManager.deleteScreening(message.getData()[0],
                     LocalDateTime.parse(message.getData()[1]),
                     message.getData()[2]);
-            // TODO mejorar msg
             conectionManager.sendMessage(new JsonResponse<Boolean>("", Msg.DONE.name(), answer));
         } catch (DateTimeParseException e) {
-            // TODO: handle exception
             conectionManager.sendMessage(new JsonResponse<Boolean>("", Msg.Error.name(), false));
         }
 
@@ -115,12 +106,9 @@ public class CinemaAdminConections extends Thread {
     private void createScreening(JsonResponse<String[]> message) {
         message = conectionManager.convertData(message, String[].class);
         try {
-
             boolean answer = cinemaManager.createScreening(message.getData()[0],
                     LocalDateTime.parse(message.getData()[1]),
                     message.getData()[2]);
-            // TODO mejorar msg
-
             conectionManager.sendMessage(new JsonResponse<Boolean>("", Msg.DONE.name(), answer));
         } catch (DateTimeParseException e) {
             System.err.println("formato de fecha incorrecto");
@@ -134,9 +122,7 @@ public class CinemaAdminConections extends Thread {
         try {
             boolean answer = cinemaManager.editMovieData(message.getData()[0], message.getData()[1],
                     message.getData()[2]);
-            // TODO mejorar msg
             String msg = answer ? Msg.DONE.name() : Msg.Error.name();
-
             conectionManager.sendMessage(new JsonResponse<Boolean>("", msg, answer));
         } catch (DateTimeParseException e) {
             System.err.println("formato de fecha incorrecto");
@@ -146,9 +132,7 @@ public class CinemaAdminConections extends Thread {
 
     private void addMovie(JsonResponse<Movie> message) {
         message = conectionManager.convertData(message, Movie.class);
-
         boolean answer = cinemaManager.addMovie(message.getData());
-        // TODO mejorar msg
         String msg = answer ? Msg.DONE.name() : Msg.Error.name();
         conectionManager.sendMessage(new JsonResponse<Boolean>("", msg, answer));
         System.out.println("Pelicula creada");
